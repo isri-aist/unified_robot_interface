@@ -18,6 +18,10 @@ function(add_mc_test TEST_NAME)
   target_include_directories(
     ${TEST_NAME} PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   )
+  set_target_properties(
+    ${TEST_NAME} PROPERTIES BUILD_RPATH "$ORIGIN/../lib" INSTALL_RPATH
+                                                         "$ORIGIN/../lib"
+  )
 
   gtest_discover_tests(${TEST_NAME} LABELS "communication" TIMEOUT 10)
 endfunction()

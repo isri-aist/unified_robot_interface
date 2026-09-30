@@ -1,10 +1,16 @@
 #include <mc_rtc/loader.h>
+#include <mutex>
 #include <robot_interface/driver/RobotDriverLoader.h>
 
 #include <robot_interface/config.h>
 
 namespace mc_robot_interface
 {
+
+std::unique_ptr<mc_rtc::ObjectLoader<mc_robot_interface::RobotDriver>> RobotDriverLoader::robot_driver_loader_;
+bool RobotDriverLoader::verbose_ = false;
+std::recursive_mutex RobotDriverLoader::mtx;
+
 void RobotDriverLoader::init(bool skip_default_path)
 {
   if(!robot_driver_loader_)
