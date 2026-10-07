@@ -10,15 +10,7 @@ project(
 )
 
 # ── jrl-cmakemodules v2 ───────────────────────────────────────────────────────
-include(FetchContent)
-FetchContent_Declare(
-  JRL_CMAKE_MODULES
-  GIT_REPOSITORY https://github.com/jrl-umi3218/jrl-cmakemodules.git
-  GIT_TAG master
-  GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(JRL_CMAKE_MODULES)
-include("${jrl_cmake_modules_SOURCE_DIR}/v2/modules/jrl.cmake")
+include(../cmake/get-jrl-cmakemodules.cmake)
 
 jrl_configure_defaults()
 set(CMAKE_CXX_STANDARD 17)
