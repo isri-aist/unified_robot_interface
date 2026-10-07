@@ -1,0 +1,141 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></meta><meta content="width=device-width, initial-scale=1" name="viewport"></meta><title>CommandLine</title><link href="styles.css" rel="stylesheet"></link><script src="highlight.min.js"></script><script>hljs.highlightAll();</script><link href="katex.min.css" rel="stylesheet"></link><script src="katex.min.js"></script><script src="auto-render.min.js"></script><script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+        ],
+      });
+    });
+  </script><link href="apple-touch-icon.png" sizes="180x180" rel="apple-touch-icon"></link><link href="favicon-32x32.png" sizes="32x32" type="image/png" rel="icon"></link><link href="favicon-16x16.png" sizes="16x16" type="image/png" rel="icon"></link></head><body><a href="https://github.com/isri-aist/unified_robot_interface/" title="View on GitHub" aria-label="View on GitHub" style="position:fixed;top:16px;right:20px;z-index:100;color:#24292f;line-height:0"><svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a><div id="wrapper"><section class="section"><div class="container"><div class="columns"><aside class="column is-one-fifth"><ul class="menu-list"><p class="is-size-4">unified_robot_interface 1.0.0</p><p class="menu-label">Navigation</p><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="https://github.com/isri-aist/unified_robot_interface/">Repository</a></li><p class="menu-label">Pages</p><li><a href="docGettingStarted.html">GettingStarted</a><ul><li><a href="docGettingStarted.html#build">Build</a></li><li><a href="docGettingStarted.html#example-1-one-robot-on-the-control-pc-autostart">Example 1: one robot on the control PC (autostart)</a></li><li><a href="docGettingStarted.html#example-2-robot-on-its-own-pc">Example 2: robot on its own PC</a></li><li><a href="docGettingStarted.html#example-3-several-robots-one-controller">Example 3: several robots, one controller</a></li><li><a href="docGettingStarted.html#example-4-test-a-driver-without-the-manager">Example 4: test a driver without the manager</a></li><li><a href="docGettingStarted.html#generate-this-documentation">Generate this documentation</a></li></ul></li><li><a href="docCommandLine.html">CommandLine</a><ul><li><a href="docCommandLine.html#uri-manager">uri manager</a></li><li><a href="docCommandLine.html#uri-interface">uri interface</a></li><li><a href="docCommandLine.html#uri-viewer">uri viewer</a></li><li><a href="docCommandLine.html#uri-create-new-driver">uri create_new_driver</a></li></ul></li><li><a href="docCommunication.html">Communication</a></li><li><a href="docRobotManager.html">RobotManager</a></li><li><a href="docRobotInterface.html">RobotInterface</a></li><li><a href="docNewRobotDriver.html">NewRobotDriver</a></li><li><a href="docSupportedRobots.html">SupportedRobots</a></li><li><a href="docSimulation.html">Simulation</a><ul><li><a href="docSimulation.html#a-mujoco-driver">A MuJoCo driver</a></li><li><a href="docSimulation.html#several-robots-in-one-scene">Several robots in one scene</a></li><li><a href="docSimulation.html#isaac-sim">Isaac Sim</a></li><li><a href="docSimulation.html#things-to-know">Things to know</a></li></ul></li><p class="menu-label">API Documentation</p><li><a href="functions.html">Functions</a></li><li><a href="records.html">Records</a></li><li><a href="enums.html">Enums</a></li><li><a href="namespaces.html">Namespaces</a></li></ul></aside><div class="column" style="overflow-x: auto"><main class="content"><h1>Command line</h1>
+<p>URI is a single executable, <code>uri</code>, with one subcommand per tool. Run
+<code>uri --help</code> or <code>uri &lt;command&gt; --help</code> to see these options in the terminal.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Runs on</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#uri-manager"><code>uri manager</code></a></td>
+<td>control PC</td>
+<td>Runs the controller (mc_rtc) for the whole fleet</td>
+</tr>
+<tr>
+<td><a href="#uri-interface"><code>uri interface</code></a></td>
+<td>robot PC, or control PC</td>
+<td>Robot-side process of one robot; loads its driver plugin</td>
+</tr>
+<tr>
+<td><a href="#uri-viewer"><code>uri viewer</code></a></td>
+<td>anywhere with the driver</td>
+<td>Loads a driver directly and prints its joint state (no manager, no network)</td>
+</tr>
+<tr>
+<td><a href="#uri-create-new-driver"><code>uri create_new_driver</code></a></td>
+<td>dev machine</td>
+<td>Scaffolds a new driver project</td>
+</tr>
+</tbody>
+</table>
+<h2 id="uri-manager">uri manager</h2>
+<pre><code class="language-bash">uri manager -c &lt;mc_rtc.yaml&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option / variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-c, --config &lt;file&gt;</code></td>
+<td>mc_rtc configuration, <strong>required</strong></td>
+</tr>
+<tr>
+<td><code>MC_RT_FREQ=&lt;ms&gt;</code></td>
+<td>Period of the <code>SCHED_DEADLINE</code> reservation for the main thread, in milliseconds (default 1)</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="docRobotManager.html">Robot manager</a> for the configuration file.</p>
+<h2 id="uri-interface">uri interface</h2>
+<pre><code class="language-bash">uri interface -c &lt;config.yaml&gt; [-n &lt;name&gt;]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-c, --config &lt;file&gt;</code></td>
+<td>Robot interface configuration, <strong>required</strong></td>
+</tr>
+<tr>
+<td><code>-n, --name &lt;name&gt;</code></td>
+<td>Robot name; overrides <code>name:</code> in the file. Must match the robot's key under <code>Robots:</code> in the manager's <code>mc_rtc.yaml</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Start it before <code>uri manager</code>, or let the manager start it with
+<code>robot_interface.autostart: true</code>. See <a href="docRobotInterface.html">Robot interface</a>.</p>
+<h2 id="uri-viewer">uri viewer</h2>
+<pre><code class="language-bash">uri viewer -c &lt;config.yaml&gt; [-n &lt;name&gt;] [-r &lt;rate&gt;]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-c, --config &lt;file&gt;</code></td>
+<td>Robot interface configuration, or the manager's <code>mc_rtc.yaml</code>, <strong>required</strong></td>
+</tr>
+<tr>
+<td><code>-n, --name &lt;name&gt;</code></td>
+<td>Robot to view under <code>Robots:</code>, when <code>--config</code> is an <code>mc_rtc.yaml</code> with several robots</td>
+</tr>
+<tr>
+<td><code>-r, --rate &lt;hz&gt;</code></td>
+<td>Display refresh rate (default 10)</td>
+</tr>
+</tbody>
+</table>
+<p>It only reads the state and never sends commands.</p>
+<h2 id="uri-create-new-driver">uri create_new_driver</h2>
+<pre><code class="language-bash">uri create_new_driver &lt;name&gt; [folder] [--no-git]
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Argument / option</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>Driver name in PascalCase, e.g. <code>Franka</code>. Generates <code>franka_driver/</code> with the class <code>RobotDriverFranka</code>. <strong>Required</strong></td>
+</tr>
+<tr>
+<td><code>folder</code></td>
+<td>Directory in which to create the project (default: current directory)</td>
+</tr>
+<tr>
+<td><code>--no-git</code></td>
+<td>Don't initialize a git repository in the project</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="docNewRobotDriver.html">Create a new robot driver</a>.</p>
+</main></div></div></div></section></div><footer class="footer"><p>Documentation for unified_robot_interface 1.0.0.</p><p>Generated by <a href="https://hdoc.io/">hdoc</a> version 1.4.1-hdocInternal on 2026-10-07T01:42:13 UTC.</p><p class="has-text-grey-light">19AD43E11B2996</p></footer></body></html>

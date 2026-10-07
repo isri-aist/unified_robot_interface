@@ -1,0 +1,227 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></meta><meta content="width=device-width, initial-scale=1" name="viewport"></meta><title>Communication</title><link href="styles.css" rel="stylesheet"></link><script src="highlight.min.js"></script><script>hljs.highlightAll();</script><link href="katex.min.css" rel="stylesheet"></link><script src="katex.min.js"></script><script src="auto-render.min.js"></script><script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+        ],
+      });
+    });
+  </script><link href="apple-touch-icon.png" sizes="180x180" rel="apple-touch-icon"></link><link href="favicon-32x32.png" sizes="32x32" type="image/png" rel="icon"></link><link href="favicon-16x16.png" sizes="16x16" type="image/png" rel="icon"></link></head><body><a href="https://github.com/isri-aist/unified_robot_interface/" title="View on GitHub" aria-label="View on GitHub" style="position:fixed;top:16px;right:20px;z-index:100;color:#24292f;line-height:0"><svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a><div id="wrapper"><section class="section"><div class="container"><div class="columns"><aside class="column is-one-fifth"><ul class="menu-list"><p class="is-size-4">unified_robot_interface 1.0.0</p><p class="menu-label">Navigation</p><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="https://github.com/isri-aist/unified_robot_interface/">Repository</a></li><p class="menu-label">Pages</p><li><a href="docGettingStarted.html">GettingStarted</a><ul><li><a href="docGettingStarted.html#build">Build</a></li><li><a href="docGettingStarted.html#example-1-one-robot-on-the-control-pc-autostart">Example 1: one robot on the control PC (autostart)</a></li><li><a href="docGettingStarted.html#example-2-robot-on-its-own-pc">Example 2: robot on its own PC</a></li><li><a href="docGettingStarted.html#example-3-several-robots-one-controller">Example 3: several robots, one controller</a></li><li><a href="docGettingStarted.html#example-4-test-a-driver-without-the-manager">Example 4: test a driver without the manager</a></li><li><a href="docGettingStarted.html#generate-this-documentation">Generate this documentation</a></li></ul></li><li><a href="docCommandLine.html">CommandLine</a><ul><li><a href="docCommandLine.html#uri-manager">uri manager</a></li><li><a href="docCommandLine.html#uri-interface">uri interface</a></li><li><a href="docCommandLine.html#uri-viewer">uri viewer</a></li><li><a href="docCommandLine.html#uri-create-new-driver">uri create_new_driver</a></li></ul></li><li><a href="docCommunication.html">Communication</a></li><li><a href="docRobotManager.html">RobotManager</a></li><li><a href="docRobotInterface.html">RobotInterface</a></li><li><a href="docNewRobotDriver.html">NewRobotDriver</a></li><li><a href="docSupportedRobots.html">SupportedRobots</a></li><li><a href="docSimulation.html">Simulation</a><ul><li><a href="docSimulation.html#a-mujoco-driver">A MuJoCo driver</a></li><li><a href="docSimulation.html#several-robots-in-one-scene">Several robots in one scene</a></li><li><a href="docSimulation.html#isaac-sim">Isaac Sim</a></li><li><a href="docSimulation.html#things-to-know">Things to know</a></li></ul></li><p class="menu-label">API Documentation</p><li><a href="functions.html">Functions</a></li><li><a href="records.html">Records</a></li><li><a href="enums.html">Enums</a></li><li><a href="namespaces.html">Namespaces</a></li></ul></aside><div class="column" style="overflow-x: auto"><main class="content"><h1>Communication (<code>robot_comm</code>)</h1>
+<p><code>robot_comm</code> is the only link between the robot manager (<code>uri</code>) and each
+robot-side <code>uri interface</code>. Neither side depends on how the bytes travel: they
+exchange plain C++ structs (<code>State</code>, <code>Command</code>, a YAML <code>std::string</code>) through a
+<code>Communication</code> object. That object pairs a <strong>transport</strong> with a
+<strong>serializer</strong>.</p>
+<pre><code class="language-text">            robot_comm::Communication
+        ┌────────────────────────────────────┐
+State ─►│ ISerializer ──► TransportInterface │──► network / shared memory
+Command │ (FlatBuffers,   (Zenoh, ...)       │
+ YAML   │  Protobuf)                         │
+        └────────────────────────────────────┘
+</code></pre>
+<h2 id="topics">Topics</h2>
+<p>Every robot has a name, which is its key under <code>Robots:</code> in <code>mc_rtc.yaml</code>. All
+of its traffic uses topics prefixed with that name:</p>
+<table>
+<thead>
+<tr>
+<th>Topic</th>
+<th>Pattern</th>
+<th>Direction</th>
+<th>Payload</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{name}/init</code></td>
+<td>query / reply</td>
+<td><code>uri manager</code> → <code>uri interface</code></td>
+<td>the robot's full config as a YAML string; reply <code>&quot;OK&quot;</code> or <code>&quot;ERROR: &lt;reason&gt;&quot;</code></td>
+</tr>
+<tr>
+<td><code>{name}/state</code></td>
+<td>pub / sub</td>
+<td><code>uri interface</code> → <code>uri manager</code></td>
+<td><code>robot_comm::State</code></td>
+</tr>
+<tr>
+<td><code>{name}/command</code></td>
+<td>pub / sub</td>
+<td><code>uri manager</code> → <code>uri interface</code></td>
+<td><code>robot_comm::Command</code></td>
+</tr>
+</tbody>
+</table>
+<p>The two sides take fixed roles. The manager side calls <code>setupServer()</code>: it
+sends on <code>/command</code> and receives on <code>/state</code>. The robot side calls
+<code>setupClient()</code>, which is the mirror image. After that, <code>send()</code> and
+<code>receive()</code> use the right topics automatically.</p>
+<p><code>receive()</code> does not block and returns only the <strong>latest</strong> message. Older
+messages are overwritten, never queued. This fits real-time control, where a
+stale state or command is useless.</p>
+<h2 id="messages">Messages</h2>
+<p>Defined in <code>robot_comm/serialization/Messages.h</code>:</p>
+<pre><code class="language-cpp">struct State {                      // robot -&gt; manager, once per robot cycle
+  std::vector&lt;double&gt; position;     // [rad], in the RobotModule's ref joint order
+  std::vector&lt;double&gt; velocity;     // [rad/s], may be empty
+  std::vector&lt;double&gt; torque;       // [Nm]
+  std::vector&lt;BodySensorData&gt; bodySensors;   // IMUs, by RobotModule sensor name
+  std::vector&lt;ForceSensorData&gt; forceSensors; // F/T sensors, in sensor frame
+  uint64_t stamp;                   // sender steady clock [ns] at send time
+};
+
+struct Command {                    // manager -&gt; robot
+  double kp, kd;                    // gains (reserved)
+  std::vector&lt;double&gt; position;     // exactly one of these three is filled,
+  std::vector&lt;double&gt; velocity;     // according to the robot's
+  std::vector&lt;double&gt; torque;       // controller.mode
+  uint64_t stateStamp;              // State::stamp of the latest state received
+  uint64_t stateHold;               // [ns] that state was held before sending
+};
+</code></pre>
+<p>The init payload is a <code>std::string</code> tagged <code>MessageType::CONFIG</code>. The mapping
+from C++ type to <code>MessageType</code> is in <code>MessageTraits.h</code>.</p>
+<p>The wire schemas are in
+<code>robot_comm/include/robot_comm/serialization/flatbuffers/mc_rtc_msgs.fbs</code> and
+<code>.../protobuf/mc_rtc_msgs.proto</code>. If you add a field to <code>State</code> or <code>Command</code>,
+update both schemas <strong>and</strong> the conversion code in
+<code>FlatBufferSerializer.cpp</code> / <code>ProtobufSerializer.cpp</code>.</p>
+<h2 id="configuration">Configuration</h2>
+<p>Communication is configured per robot, under <code>network_interface</code>:</p>
+<pre><code class="language-yaml">Robots:
+  ur5e:
+    network_interface:
+      protocol: zenoh          # required: zenoh | zenoh/shm
+      backend: flatbuffer      # optional: flatbuffer (default) | protobuf
+      configuration: /path/to/zenoh.json5   # optional: full Zenoh config file
+      latency_stats: true      # optional: log robot_comm round trip (default false)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Values</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>protocol</code></td>
+<td><code>zenoh</code>, <code>zenoh/shm</code></td>
+<td><code>zenoh/shm</code> enables Zenoh's shared-memory transport in peer mode. The manager picks it by default for <code>autostart</code> robots. <code>tcp</code>, <code>udp</code> and <code>shm</code> are parsed but not implemented yet, and are rejected by <code>CommunicationFactory</code>.</td>
+</tr>
+<tr>
+<td><code>backend</code></td>
+<td><code>flatbuffer</code>, <code>protobuf</code></td>
+<td>Checked, but <code>ZenohCommunication</code> always uses FlatBuffers for now. Protobuf also requires building with Protobuf (<code>WITH_PROTOBUF</code>).</td>
+</tr>
+<tr>
+<td><code>configuration</code></td>
+<td>path to a <code>.json5</code></td>
+<td>Replaces the generated Zenoh config entirely, including the <code>zenoh/shm</code> settings. Use it to set <code>connect.endpoints</code> when multicast discovery is not available.</td>
+</tr>
+<tr>
+<td><code>latency_stats</code></td>
+<td><code>true</code>, <code>false</code></td>
+<td><code>uri interface</code> logs the robot_comm round trip about once per second. Read from the interface's own config: with <code>autostart</code> that is the manager's entry, otherwise the robot-side file.</td>
+</tr>
+</tbody>
+</table>
+<h3>Measuring latency</h3>
+<p>Every <code>State</code> carries <code>stamp</code>, the interface's steady clock at send time. The
+manager echoes the latest one in each <code>Command</code> as <code>stateStamp</code>, with
+<code>stateHold</code>, the time between that state's arrival and the command being sent.
+When the command arrives, the interface computes:</p>
+<pre><code class="language-text">round trip = arrival - stateStamp - stateHold
+</code></pre>
+<p>Both stamps come from the interface's clock, so this works across machines
+without clock sync. It covers serialization, the transport and delivery to the
+receive buffer in both directions, but not the time mc_rtc spends between
+commands. <code>one-way ~ round trip / 2</code> assumes both directions are symmetric.
+Arrival times are taken in the transport callback, so the control loops'
+polling delay is not counted.</p>
+<pre><code class="language-text">[info] [RobotInterface] 'ur5e' robot_comm round trip (&lt;n&gt; samples): min &lt;x&gt; us | avg &lt;y&gt; us | max &lt;z&gt; us (one-way ~ &lt;y/2&gt; us)
+</code></pre>
+<p>Example Zenoh client config that connects to a known router:</p>
+<pre><code class="language-json5">{
+  mode: &quot;client&quot;,
+  connect: { endpoints: [&quot;tcp/192.168.1.10:7447&quot;] },
+  scouting: { multicast: { enabled: false } },
+}
+</code></pre>
+<h2 id="using-robot-comm-directly">Using <code>robot_comm</code> directly</h2>
+<p>You normally never touch <code>robot_comm</code>: <code>uri manager</code> and <code>uri interface</code> already use
+it. It is still a standalone library, handy for tools, tests or a custom
+manager.</p>
+<h3>Role-based state/command exchange</h3>
+<p>This is what <code>FMInterfaceTemplate</code> (manager side) and <code>RobotInterface</code> (robot
+side) do every cycle:</p>
+<pre><code class="language-cpp">#include &lt;robot_comm/CommunicationFactory.h&gt;
+
+mc_rtc::Configuration net;
+net.add(&quot;protocol&quot;, &quot;zenoh&quot;);
+
+// Robot side: publishes on &quot;demo/state&quot;, listens on &quot;demo/command&quot;.
+auto robot = robot_comm::CommunicationFactory::makeCommunication(&quot;demo&quot;, net);
+robot-&gt;setupClient();
+
+// Manager side: publishes on &quot;demo/command&quot;, listens on &quot;demo/state&quot;.
+auto manager = robot_comm::CommunicationFactory::makeCommunication(&quot;demo&quot;, net);
+manager-&gt;setupServer();
+
+robot_comm::State state;
+state.position = {0.0, -1.57, 1.57, 0.0, 0.0, 0.0};
+robot-&gt;send(robot-&gt;encode(state));
+
+// ... later, non-blocking:
+if(auto rx = manager-&gt;receive(); rx &amp;&amp; !rx-&gt;empty())
+{
+  auto s = manager-&gt;serializer()-&gt;deserialize&lt;robot_comm::State&gt;(
+      robot_comm::MessageType::STATE, rx-&gt;data(), rx-&gt;size());
+  // s-&gt;position == {0.0, -1.57, ...}
+}
+</code></pre>
+<h3>Query / reply</h3>
+<p>This is the pattern behind the init handshake. The replying side registers a
+handler; the other side blocks until it gets a reply or times out:</p>
+<pre><code class="language-cpp">// Robot side: answer queries on &quot;demo/init&quot;.
+robot-&gt;handleQuery(&quot;demo/init&quot;, [&amp;](const robot_comm::ByteBuffer &amp; payload) {
+  auto yaml = robot-&gt;serializer()-&gt;deserialize&lt;std::string&gt;(
+      robot_comm::MessageType::CONFIG, payload.data(), payload.size());
+  const std::string ok = yaml ? &quot;OK&quot; : &quot;ERROR: bad payload&quot;;
+  return robot_comm::ByteBuffer(ok.begin(), ok.end());
+});
+
+// Manager side: send the config and wait up to 5 s.
+auto payload = manager-&gt;serializer()-&gt;serialize(std::string{&quot;controller: {mode: position}&quot;});
+auto reply = manager-&gt;query(&quot;demo/init&quot;, payload, std::chrono::seconds(5));
+if(!reply) { /* timed out: is the robot process running? */ }
+</code></pre>
+<p>Zenoh needs a moment to propagate a newly declared queryable. Query too soon
+after <code>handleQuery()</code> and the query can time out. The manager handles this by
+retrying up to 5 times.</p>
+<h3>Generic typed pub/sub</h3>
+<p>Any type with a <code>MessageTraits</code> specialization can be published on an
+arbitrary topic:</p>
+<pre><code class="language-cpp">auto sub = manager-&gt;subscribe&lt;robot_comm::State&gt;(&quot;demo/state&quot;,
+    [](const robot_comm::State &amp; s) { /* called from the transport thread */ });
+robot-&gt;publish(&quot;demo/state&quot;, state);
+</code></pre>
+<h2 id="extending">Extending</h2>
+<ul>
+<li><strong>A new transport</strong>: implement <code>robot_comm::TransportInterface</code>
+(<code>publish</code>, <code>subscribe</code>, <code>registerQueryable</code>, <code>query</code>, ...). Add a
+<code>Communication</code> subclass that creates it, as <code>ZenohCommunication</code> does, and
+map a new <code>protocol</code> string to it in <code>CommunicationFactory::makeCommunication</code>.</li>
+<li><strong>A new serializer</strong>: implement <code>robot_comm::ISerializer</code>
+(<code>serializeImpl</code>/<code>deserializeImpl</code> for each <code>MessageType</code>), then add a
+<code>SerializationBackend</code> value and a case in the <code>Communication</code> constructor.</li>
+</ul>
+<p>The integration tests in <code>robot_interface/tests/</code> (<code>test_init_handshake.cpp</code>,
+<code>test_pubsub_loop.cpp</code>) exercise exactly the patterns above. Build them with
+<code>-DBUILD_TESTING=ON</code>.</p>
+<hr />
+<p><a href="https://unit.aist.go.jp/isri/isri-jrl/en/"><img src="images/jrl-logo.png" alt="CNRS-AIST JRL (Joint Robotics Laboratory)" /></a><a href="https://www.cnrs.fr/"><img src="images/cnrs-logo.png" alt="CNRS" /></a><a href="https://www.aist.go.jp/index_en.html"><img src="images/aist-logo.png" alt="AIST" /></a></p>
+<p>Copyright © CNRS-AIST JRL 2026</p>
+</main></div></div></div></section></div><footer class="footer"><p>Documentation for unified_robot_interface 1.0.0.</p><p>Generated by <a href="https://hdoc.io/">hdoc</a> version 1.4.1-hdocInternal on 2026-10-07T01:42:13 UTC.</p><p class="has-text-grey-light">19AD43E11B2996</p></footer></body></html>

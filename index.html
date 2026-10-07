@@ -1,0 +1,108 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></meta><meta content="width=device-width, initial-scale=1" name="viewport"></meta><title>unified_robot_interface 1.0.0 documentation</title><link href="styles.css" rel="stylesheet"></link><script src="highlight.min.js"></script><script>hljs.highlightAll();</script><link href="katex.min.css" rel="stylesheet"></link><script src="katex.min.js"></script><script src="auto-render.min.js"></script><script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+        ],
+      });
+    });
+  </script><link href="apple-touch-icon.png" sizes="180x180" rel="apple-touch-icon"></link><link href="favicon-32x32.png" sizes="32x32" type="image/png" rel="icon"></link><link href="favicon-16x16.png" sizes="16x16" type="image/png" rel="icon"></link></head><body><a href="https://github.com/isri-aist/unified_robot_interface/" title="View on GitHub" aria-label="View on GitHub" style="position:fixed;top:16px;right:20px;z-index:100;color:#24292f;line-height:0"><svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a><div id="wrapper"><section class="section"><div class="container"><div class="columns"><aside class="column is-one-fifth"><ul class="menu-list"><p class="is-size-4">unified_robot_interface 1.0.0</p><p class="menu-label">Navigation</p><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="https://github.com/isri-aist/unified_robot_interface/">Repository</a></li><p class="menu-label">Pages</p><li><a href="docGettingStarted.html">GettingStarted</a><ul><li><a href="docGettingStarted.html#build">Build</a></li><li><a href="docGettingStarted.html#example-1-one-robot-on-the-control-pc-autostart">Example 1: one robot on the control PC (autostart)</a></li><li><a href="docGettingStarted.html#example-2-robot-on-its-own-pc">Example 2: robot on its own PC</a></li><li><a href="docGettingStarted.html#example-3-several-robots-one-controller">Example 3: several robots, one controller</a></li><li><a href="docGettingStarted.html#example-4-test-a-driver-without-the-manager">Example 4: test a driver without the manager</a></li><li><a href="docGettingStarted.html#generate-this-documentation">Generate this documentation</a></li></ul></li><li><a href="docCommandLine.html">CommandLine</a><ul><li><a href="docCommandLine.html#uri-manager">uri manager</a></li><li><a href="docCommandLine.html#uri-interface">uri interface</a></li><li><a href="docCommandLine.html#uri-viewer">uri viewer</a></li><li><a href="docCommandLine.html#uri-create-new-driver">uri create_new_driver</a></li></ul></li><li><a href="docCommunication.html">Communication</a></li><li><a href="docRobotManager.html">RobotManager</a></li><li><a href="docRobotInterface.html">RobotInterface</a></li><li><a href="docNewRobotDriver.html">NewRobotDriver</a></li><li><a href="docSupportedRobots.html">SupportedRobots</a></li><li><a href="docSimulation.html">Simulation</a><ul><li><a href="docSimulation.html#a-mujoco-driver">A MuJoCo driver</a></li><li><a href="docSimulation.html#several-robots-in-one-scene">Several robots in one scene</a></li><li><a href="docSimulation.html#isaac-sim">Isaac Sim</a></li><li><a href="docSimulation.html#things-to-know">Things to know</a></li></ul></li><p class="menu-label">API Documentation</p><li><a href="functions.html">Functions</a></li><li><a href="records.html">Records</a></li><li><a href="enums.html">Enums</a></li><li><a href="namespaces.html">Namespaces</a></li></ul></aside><div class="column" style="overflow-x: auto"><main class="content"><h1>Unified Robot Interface (URI)</h1>
+<p>URI runs one <a href="https://jrl-umi3218.github.io/mc_rtc/">mc_rtc</a> controller over a
+fleet of heterogeneous robots. It also standardises how a new robot is
+connected to that controller.</p>
+<h2 id="context">Context</h2>
+<p>mc_rtc is a real-time, QP-based control framework. Usually, running mc_rtc on
+a robot means writing a dedicated <em>interface</em> binary for that robot. The
+binary embeds <code>mc_control::MCGlobalController</code>, talks to the robot's SDK and
+runs the control loop. Each new robot needs another such binary, and
+controlling several robots from one controller is not supported out of the
+box.</p>
+<p>URI splits that monolithic interface into three parts:</p>
+<ul>
+<li><strong><code>uri manager</code>, the robot manager</strong>: a single process on the control PC that runs
+mc_rtc for the whole fleet. It reads the <code>Robots:</code> section of <code>mc_rtc.yaml</code>
+and feeds every robot's state into mc_rtc. It then sends mc_rtc's commands
+back to each robot.</li>
+<li><strong><code>uri interface</code></strong>: one generic process per robot. It runs either on the
+robot's own PC or on the control PC. It knows nothing about a particular
+robot: at startup it loads a <strong><code>RobotDriver</code> plugin</strong> (a shared library)
+that wraps the robot's SDK.</li>
+<li><strong><code>robot_comm</code></strong>: the communication layer between the two. It currently uses
+Zenoh for transport and FlatBuffers for serialization. Neither side depends
+on how bytes travel.</li>
+</ul>
+<p><img src="images/architecture.svg" alt="URI architecture" /></p>
+<p>As a result:</p>
+<ul>
+<li><strong>Adding a robot</strong> means writing a small <code>RobotDriver</code> plugin (about eight
+methods, no mc_rtc dependency) and adding one entry to <code>mc_rtc.yaml</code>. See
+<a href="docNewRobotDriver.html">Create a new robot driver</a>.</li>
+<li><strong>Robots can be distributed.</strong> A robot connected to another PC runs its own
+<code>uri interface</code> there. A robot plugged into the control PC is started
+automatically by <code>uri manager</code> (<code>robot_interface.autostart: true</code>) and uses Zenoh
+shared memory.</li>
+<li><strong>Robots with different rates share one controller.</strong> Each robot keeps its
+own control period. mc_rtc runs at a multiple of it.</li>
+</ul>
+<h2 id="components">Components</h2>
+<table>
+<thead>
+<tr>
+<th>Directory</th>
+<th>Library / binary</th>
+<th>Role</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>robot_comm/</code></td>
+<td><code>robot_comm</code></td>
+<td>Transport and serializer abstraction, message types, pub/sub and query/reply</td>
+<td><a href="docCommunication.html">Communication</a></td>
+</tr>
+<tr>
+<td><code>robot_manager/</code></td>
+<td><code>uri</code>, <code>robot_manager</code>, <code>robot_interface</code></td>
+<td>Fleet orchestrator: config parsing, init handshake, main loop, manager-side robot proxies</td>
+<td><a href="docRobotManager.html">Robot manager</a></td>
+</tr>
+<tr>
+<td><code>robot_interface/</code></td>
+<td><code>RobotInterface</code> (<code>uri interface</code>), <code>robot_driver_api</code>, <code>robot_driver_loader</code>, state viewer (<code>uri viewer</code>)</td>
+<td>Robot-side process, the <code>RobotDriver</code> plugin API and its loader</td>
+<td><a href="docRobotInterface.html">Robot interface</a></td>
+</tr>
+<tr>
+<td><code>robot_controller/</code></td>
+<td><code>robot_controller_mc_rtc</code></td>
+<td>Controller backend abstraction; mc_rtc is the only current backend</td>
+<td><a href="docRobotManager.html">Robot manager</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="where-to-go-next">Where to go next</h2>
+<ol>
+<li><a href="docGettingStarted.html">Getting started</a>: build the project, run the
+examples and generate this documentation.</li>
+<li><a href="docCommandLine.html">Command line</a>: the <code>uri</code> commands and their options.</li>
+<li><a href="docCommunication.html">Communication</a>: topics, messages, serializers and
+how to use <code>robot_comm</code> on its own.</li>
+<li><a href="docRobotManager.html">Robot manager</a>: <code>mc_rtc.yaml</code> reference, the init
+handshake and the real-time loop.</li>
+<li><a href="docRobotInterface.html">Robot interface</a>: the robot-side process, its
+control loop and how drivers are loaded.</li>
+<li><a href="docSupportedRobots.html">Supported robots</a>: the existing driver plugins
+and how to install them.</li>
+<li><a href="docNewRobotDriver.html">Create a new robot driver</a>: scaffold, implement,
+build and test a driver for a new robot.</li>
+<li><a href="docSimulation.html">Simulation</a>: simulate robots with ros2_control, or
+write a simulation driver.</li>
+</ol>
+<p>The API reference (classes, functions, namespaces) is in the sidebar. It is
+generated from the source code.</p>
+<hr />
+<p><a href="https://unit.aist.go.jp/isri/isri-jrl/en/"><img src="images/jrl-logo.png" alt="CNRS-AIST JRL (Joint Robotics Laboratory)" /></a><a href="https://www.cnrs.fr/"><img src="images/cnrs-logo.png" alt="CNRS" /></a><a href="https://www.aist.go.jp/index_en.html"><img src="images/aist-logo.png" alt="AIST" /></a></p>
+<p>Copyright © CNRS-AIST JRL 2026</p>
+</main></div></div></div></section></div><footer class="footer"><p>Documentation for unified_robot_interface 1.0.0.</p><p>Generated by <a href="https://hdoc.io/">hdoc</a> version 1.4.1-hdocInternal on 2026-10-07T01:42:13 UTC.</p><p class="has-text-grey-light">19AD43E11B2996</p></footer></body></html>

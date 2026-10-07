@@ -1,0 +1,323 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></meta><meta content="width=device-width, initial-scale=1" name="viewport"></meta><title>RobotManager</title><link href="styles.css" rel="stylesheet"></link><script src="highlight.min.js"></script><script>hljs.highlightAll();</script><link href="katex.min.css" rel="stylesheet"></link><script src="katex.min.js"></script><script src="auto-render.min.js"></script><script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+        ],
+      });
+    });
+  </script><link href="apple-touch-icon.png" sizes="180x180" rel="apple-touch-icon"></link><link href="favicon-32x32.png" sizes="32x32" type="image/png" rel="icon"></link><link href="favicon-16x16.png" sizes="16x16" type="image/png" rel="icon"></link></head><body><a href="https://github.com/isri-aist/unified_robot_interface/" title="View on GitHub" aria-label="View on GitHub" style="position:fixed;top:16px;right:20px;z-index:100;color:#24292f;line-height:0"><svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a><div id="wrapper"><section class="section"><div class="container"><div class="columns"><aside class="column is-one-fifth"><ul class="menu-list"><p class="is-size-4">unified_robot_interface 1.0.0</p><p class="menu-label">Navigation</p><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="https://github.com/isri-aist/unified_robot_interface/">Repository</a></li><p class="menu-label">Pages</p><li><a href="docGettingStarted.html">GettingStarted</a><ul><li><a href="docGettingStarted.html#build">Build</a></li><li><a href="docGettingStarted.html#example-1-one-robot-on-the-control-pc-autostart">Example 1: one robot on the control PC (autostart)</a></li><li><a href="docGettingStarted.html#example-2-robot-on-its-own-pc">Example 2: robot on its own PC</a></li><li><a href="docGettingStarted.html#example-3-several-robots-one-controller">Example 3: several robots, one controller</a></li><li><a href="docGettingStarted.html#example-4-test-a-driver-without-the-manager">Example 4: test a driver without the manager</a></li><li><a href="docGettingStarted.html#generate-this-documentation">Generate this documentation</a></li></ul></li><li><a href="docCommandLine.html">CommandLine</a><ul><li><a href="docCommandLine.html#uri-manager">uri manager</a></li><li><a href="docCommandLine.html#uri-interface">uri interface</a></li><li><a href="docCommandLine.html#uri-viewer">uri viewer</a></li><li><a href="docCommandLine.html#uri-create-new-driver">uri create_new_driver</a></li></ul></li><li><a href="docCommunication.html">Communication</a></li><li><a href="docRobotManager.html">RobotManager</a></li><li><a href="docRobotInterface.html">RobotInterface</a></li><li><a href="docNewRobotDriver.html">NewRobotDriver</a></li><li><a href="docSupportedRobots.html">SupportedRobots</a></li><li><a href="docSimulation.html">Simulation</a><ul><li><a href="docSimulation.html#a-mujoco-driver">A MuJoCo driver</a></li><li><a href="docSimulation.html#several-robots-in-one-scene">Several robots in one scene</a></li><li><a href="docSimulation.html#isaac-sim">Isaac Sim</a></li><li><a href="docSimulation.html#things-to-know">Things to know</a></li></ul></li><p class="menu-label">API Documentation</p><li><a href="functions.html">Functions</a></li><li><a href="records.html">Records</a></li><li><a href="enums.html">Enums</a></li><li><a href="namespaces.html">Namespaces</a></li></ul></aside><div class="column" style="overflow-x: auto"><main class="content"><h1>Robot manager (<code>uri manager</code>)</h1>
+<p><code>uri manager</code> is the process that runs mc_rtc. At startup it reads a standard
+<code>mc_rtc.yaml</code> extended with a <code>Robots:</code> section and sets up one manager-side
+proxy per robot. It then handshakes with every robot's interface process (<code>uri interface</code>).
+Finally, it runs the real-time loop that moves state into mc_rtc and commands
+out of it.</p>
+<pre><code class="language-bash">uri manager -c /path/to/mc_rtc.yaml
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option / variable</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-c, --config &lt;file&gt;</code></td>
+<td>mc_rtc configuration, <strong>required</strong></td>
+</tr>
+<tr>
+<td><code>MC_RT_FREQ=&lt;ms&gt;</code></td>
+<td>Period of the <code>SCHED_DEADLINE</code> reservation for the main thread, in <strong>milliseconds</strong> (default 1)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="code-map">Code map</h2>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>robot_manager::RobotManager</code></td>
+<td><code>robot_manager/src/robot_manager/RobotManager.cpp</code></td>
+<td>Config processing, autostart, init handshake, main loop</td>
+</tr>
+<tr>
+<td><code>robot_manager::RobotInterfaceBase</code></td>
+<td><code>robot_manager/include/robot_interface/RobotInterfaceBase.h</code></td>
+<td>Abstract manager-side proxy of one robot (<code>updateSensors</code>, <code>updateControl</code>)</td>
+</tr>
+<tr>
+<td><code>robot_manager::FMInterfaceTemplate</code></td>
+<td><code>robot_manager/src/robot_interface/FMInterfaceTemplate.cpp</code></td>
+<td>Default proxy: forwards <code>State</code> to mc_rtc and mc_rtc's output as <code>Command</code></td>
+</tr>
+<tr>
+<td><code>robot_manager::RobotInterfaceFactory</code></td>
+<td><code>robot_manager/src/robot_interface/RobotInterfaceFactory.cpp</code></td>
+<td>Picks the proxy implementation from the robot's <code>interface:</code> key</td>
+</tr>
+<tr>
+<td><code>robot_controller::Controller</code></td>
+<td><code>robot_controller/include/robot_controller/Controller.h</code></td>
+<td>Abstract controller backend; <code>ControllerMcRtc</code> wraps <code>MCGlobalController</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="configuration-reference">Configuration reference</h2>
+<p><code>uri</code> takes a normal mc_rtc configuration: <code>MainRobot</code>, <code>Enabled</code>,
+<code>Timestep</code>, observers and so on still mean what they do in mc_rtc. On top of
+that, it reads the keys below.</p>
+<pre><code class="language-yaml">MainRobot: UR5e
+Enabled: Posture
+Timestep: 0.005              # mc_rtc period, shared by all robots
+
+Controller: mc_rtc           # [optional] controller backend, default mc_rtc
+
+Robots:
+  ur5e:                                  # robot name = topic prefix
+    module: UR5e                         # mc_rtc RobotModule name
+    interface: interface_template        # [optional] manager-side proxy
+    base: other_robot                    # [optional] inherit another entry
+    controller:
+      mode: position                     # position | velocity | torque
+      time_step: 0.001                   # [optional] robot interface period [s], default Timestep
+    network_interface:                   # see Communication
+      protocol: zenoh
+    robot_interface:                     # forwarded to the uri interface
+      driver: RobotDriverRTDE            # plugin class name
+      ip: 192.168.1.6
+      port: 0
+      config_path: /path/to/driver.yaml  # [optional] driver-specific file
+      autostart: false                   # [optional] spawn uri interface locally
+</code></pre>
+<h3><code>Robots.&lt;name&gt;</code> keys</h3>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Required</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>module</code></td>
+<td><strong>yes</strong></td>
+<td>none</td>
+<td>mc_rtc RobotModule. It also provides the gripper list sent to the driver.</td>
+</tr>
+<tr>
+<td><code>interface</code></td>
+<td>no</td>
+<td><code>interface_template</code></td>
+<td>Manager-side proxy implementation (<code>RobotInterfaceFactory</code>)</td>
+</tr>
+<tr>
+<td><code>base</code></td>
+<td>no</td>
+<td>none</td>
+<td>Copy another robot's entry, then apply this entry's keys on top</td>
+</tr>
+<tr>
+<td><code>controller.mode</code></td>
+<td>no</td>
+<td><code>position</code></td>
+<td>Command type sent to the robot</td>
+</tr>
+<tr>
+<td><code>controller.time_step</code></td>
+<td>no</td>
+<td><code>Timestep</code></td>
+<td>Robot interface control period in seconds. Can differ between robots.</td>
+</tr>
+<tr>
+<td><code>network_interface.protocol</code></td>
+<td>no</td>
+<td><code>zenoh/shm</code></td>
+<td>See <a href="docCommunication.html">Communication</a></td>
+</tr>
+<tr>
+<td><code>robot_interface.driver</code></td>
+<td><strong>yes</strong></td>
+<td>none</td>
+<td>Driver plugin class, e.g. <code>RobotDriverRTDE</code></td>
+</tr>
+<tr>
+<td><code>robot_interface.ip</code></td>
+<td><strong>yes</strong></td>
+<td>none</td>
+<td>Passed to the driver's <code>create()</code>. Required even for drivers that ignore it.</td>
+</tr>
+<tr>
+<td><code>robot_interface.port</code></td>
+<td><strong>yes</strong></td>
+<td>none</td>
+<td>Same as <code>ip</code></td>
+</tr>
+<tr>
+<td><code>robot_interface.config_path</code></td>
+<td>no</td>
+<td><code>&quot;&quot;</code></td>
+<td>Passed to the driver's <code>create()</code> for driver-specific settings</td>
+</tr>
+<tr>
+<td><code>robot_interface.autostart</code></td>
+<td>no</td>
+<td><code>false</code></td>
+<td><code>uri manager</code> spawns and stops the robot's <code>uri interface</code> itself</td>
+</tr>
+</tbody>
+</table>
+<h3>Timing rules</h3>
+<p>For every robot, <code>uri</code> checks the timing at startup and refuses to start if a
+rule is broken:</p>
+<ul>
+<li><code>Timestep</code> ≥ <code>controller.time_step</code>: mc_rtc cannot run faster than the
+robot.</li>
+<li><code>Timestep</code> is an exact multiple of <code>controller.time_step</code>.</li>
+</ul>
+<p>The main loop ticks at the robot period and calls mc_rtc's <code>run()</code> every
+<code>Timestep / time_step</code> ticks. For example, <code>Timestep: 0.005</code> with
+<code>time_step: 0.001</code> gives a 1 kHz loop and mc_rtc at 200 Hz. Between mc_rtc
+runs, the last command is sent again.</p>
+<blockquote>
+<p>The main loop period is taken from the <strong>first</strong> robot. With several robots,
+give them the same <code>time_step</code>.</p>
+</blockquote>
+<h2 id="startup-sequence">Startup sequence</h2>
+<p><img src="images/init_sequence.svg" alt="Init handshake and control loop" /></p>
+<ol>
+<li><strong>Config processing</strong> (<code>processGConfig</code>) fills in the few defaults, resolves
+<code>base:</code>, validates required keys and picks the protocol.</li>
+<li><strong>Controller</strong>: <code>ControllerLoader</code> loads the backend named by <code>Controller:</code>
+from <code>&lt;libdir&gt;/robot_controller/librobot_controller_&lt;backend&gt;.so</code>.</li>
+<li><strong>Per robot</strong> (<code>init</code>):
+<ul>
+<li>Start a local Zenoh router if any robot uses Zenoh.</li>
+<li>Read the grippers from the RobotModule and add them to the robot's
+config as <code>grippers: {name: [joints]}</code>.</li>
+<li>With <code>autostart: true</code>, write <code>/tmp/robot_manager_&lt;name&gt;_interface.yaml</code>
+and <code>posix_spawn</code> <code>uri interface -c &lt;that file&gt; -n &lt;name&gt;</code>, using the same
+<code>uri</code> executable as the manager (<code>/proc/self/exe</code>), or <code>uri</code> on <code>PATH</code> as a
+fallback. The exact command is printed, so it can be rerun by hand with
+<code>autostart: false</code>.</li>
+<li>Create the proxy (<code>FMInterfaceTemplate</code>) with a <code>robot_comm</code> server.</li>
+</ul>
+</li>
+<li><strong>Init handshake</strong>: for each robot, send the robot's whole config on
+<code>{name}/init</code> and wait up to 60 s per attempt, retrying up to 5 times.
+Robots that time out or reply <code>ERROR: ...</code> are <strong>dropped</strong> with an error
+message, and the others continue. If no robot answers, <code>uri</code> stops.</li>
+<li><strong>Timing checks</strong> (above), then <code>initializeRobots()</code> and <code>start()</code> on the
+controller.</li>
+<li><strong>Main loop</strong> (<code>mainThread</code>), every robot period:
+<ol>
+<li><code>updateSensors()</code> on every proxy. The first <code>State</code> received from a
+robot initializes the mc_rtc robot at its real joint positions.</li>
+<li>Once every robot has been initialized, call <code>controller.run()</code> every
+<code>step_size</code> ticks. Until then, no command is computed, so the robot
+never jumps toward a default posture.</li>
+<li><code>updateControl()</code> on every proxy publishes a <code>Command</code> in the robot's
+<code>controller.mode</code>.</li>
+</ol>
+</li>
+</ol>
+<p>On <code>Ctrl+C</code>, the controller stops, the threads are joined and spawned
+<code>uri interface</code> processes receive <code>SIGTERM</code>, then <code>SIGKILL</code> after 5 s.</p>
+<h2 id="controller-backend">Controller backend</h2>
+<p><code>uri</code> talks to mc_rtc only through <code>robot_controller::Controller</code>, loaded as a
+plugin, so another control framework could be plugged in. A backend is a
+shared library named <code>librobot_controller_&lt;name&gt;.so</code>, installed in
+<code>&lt;libdir&gt;/robot_controller/</code>. It exports three C symbols:</p>
+<pre><code class="language-cpp">extern &quot;C&quot; {
+const char * robot_controller_backend_name();                   // must return &quot;&lt;name&gt;&quot;
+robot_controller::Controller * robot_controller_create(const char * config_yaml);
+void robot_controller_destroy(robot_controller::Controller *);
+}
+</code></pre>
+<p>Select it with <code>Controller: &lt;name&gt;</code> in <code>mc_rtc.yaml</code>. See
+<code>robot_controller/src/mc_rtc/ControllerMcRtc.cpp</code> for the reference
+implementation.</p>
+<h2 id="custom-manager-side-proxy">Custom manager-side proxy</h2>
+<p><code>FMInterfaceTemplate</code> covers the standard case: joint state and sensors in,
+one command type out. If a robot needs different manager-side behavior, such
+as a different data mapping or extra logic before commands are sent,
+subclass <code>robot_manager::RobotInterfaceBase</code>:</p>
+<pre><code class="language-cpp">class MyInterface : public robot_manager::RobotInterfaceBase
+{
+public:
+  MyInterface(const std::string &amp; name, const mc_rtc::Configuration &amp; config, uint8_t buffer_size)
+  : RobotInterfaceBase(name, config, buffer_size)
+  {
+    auto comm = robot_comm::CommunicationFactory::makeCommunication(name, config(&quot;network_interface&quot;));
+    comm-&gt;setupServer();
+    setCommunication(std::move(comm));
+  }
+
+  void init() override {}
+  void reset() override {}
+  void stop() override {}
+
+  void updateSensors(robot_controller::Controller &amp; gc) override { /* receive State, gc.setEncoderValues(...) */ }
+  void updateControl(robot_controller::Controller &amp; gc) override { /* gc.command(...), send Command */ }
+  bool isInitialized() const override { /* true once gc.initializeRobot() was called */ }
+};
+</code></pre>
+<p>Then register it under a new name in <code>RobotInterfaceFactory::makeInterface</code>,
+and select it with <code>interface: &lt;name&gt;</code> on the robot.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3>Segmentation fault on Ctrl-C with CycloneDDS</h3>
+<p>Symptom: <code>uri manager</code> shuts down normally, then crashes:</p>
+<pre><code class="language-text">^C[warning] Caught signal 2
+RobotManager shutdown complete.
+[info] [ZenohTransport] Stopped
+segmentation fault (core dumped)  uri manager --config ...
+</code></pre>
+<p>The crash does not happen under gdb. It goes away when <code>RMW_IMPLEMENTATION</code>
+is unset.</p>
+<p>Cause: mc_rtc's ROS support loads the ROS middleware named by
+<code>RMW_IMPLEMENTATION</code>. ROS Humble's <code>rmw_cyclonedds_cpp</code> is built against the
+CycloneDDS shipped with ROS (0.10.5, in <code>/opt/ros/humble/lib/x86_64-linux-gnu</code>).
+If another CycloneDDS is installed system-wide (for example 0.10.2 in
+<code>/usr/local/lib</code>, installed by the Unitree SDK), <code>uri</code> may load that one
+instead. The two versions are not ABI compatible, and the process crashes when
+DDS is torn down at exit.</p>
+<p><code>LD_LIBRARY_PATH</code> does not help. <code>uri</code> has the <code>cap_sys_nice</code> file capability
+(see <a href="docGettingStarted.html">Getting started</a>), so the dynamic loader ignores
+<code>LD_LIBRARY_PATH</code> and takes libraries from <code>ld.so.cache</code>, where <code>/usr/local/lib</code>
+comes first. gdb drops the capability, so under gdb the library path is
+resolved differently. That is why the crash does not show up there.</p>
+<p>To check which CycloneDDS is loaded, look at the maps of a running manager:</p>
+<pre><code class="language-sh">grep ddsc /proc/$(pgrep -f &quot;uri manager&quot;)/maps
+</code></pre>
+<p>Fixes, from simplest to cleanest:</p>
+<ol>
+<li>Use Fast DDS for the manager: unset <code>RMW_IMPLEMENTATION</code>, or set it to
+<code>rmw_fastrtps_cpp</code>.</li>
+<li>Take the other CycloneDDS out of the system-wide path. For example, move
+<code>/usr/local/lib/libddsc*</code> and <code>/usr/local/lib/libddscxx*</code> to a private
+prefix, run <code>sudo ldconfig</code>, and point the software that needs them there
+with RPATH or <code>LD_LIBRARY_PATH</code>. <code>ldconfig -p | grep libddsc</code> lists every
+copy the loader can find.</li>
+</ol>
+<h2 id="known-limitations">Known limitations</h2>
+<ul>
+<li>The Zenoh router config path in <code>RobotManager::launchZenohRouter()</code> is
+hard-coded. Adjust it for your machine.</li>
+<li>The robot proxy's <code>controlThread()</code> is currently a no-op. All robots are
+served by the single main loop.</li>
+<li>Init waits a fixed 500 ms after spawning before querying. The retry loop
+covers slower starts.</li>
+</ul>
+<hr />
+<p><a href="https://unit.aist.go.jp/isri/isri-jrl/en/"><img src="images/jrl-logo.png" alt="CNRS-AIST JRL (Joint Robotics Laboratory)" /></a><a href="https://www.cnrs.fr/"><img src="images/cnrs-logo.png" alt="CNRS" /></a><a href="https://www.aist.go.jp/index_en.html"><img src="images/aist-logo.png" alt="AIST" /></a></p>
+<p>Copyright © CNRS-AIST JRL 2026</p>
+</main></div></div></div></section></div><footer class="footer"><p>Documentation for unified_robot_interface 1.0.0.</p><p>Generated by <a href="https://hdoc.io/">hdoc</a> version 1.4.1-hdocInternal on 2026-10-07T01:42:13 UTC.</p><p class="has-text-grey-light">19AD43E11B2996</p></footer></body></html>

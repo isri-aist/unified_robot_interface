@@ -1,0 +1,233 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></meta><meta content="width=device-width, initial-scale=1" name="viewport"></meta><title>SupportedRobots</title><link href="styles.css" rel="stylesheet"></link><script src="highlight.min.js"></script><script>hljs.highlightAll();</script><link href="katex.min.css" rel="stylesheet"></link><script src="katex.min.js"></script><script src="auto-render.min.js"></script><script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+        ],
+      });
+    });
+  </script><link href="apple-touch-icon.png" sizes="180x180" rel="apple-touch-icon"></link><link href="favicon-32x32.png" sizes="32x32" type="image/png" rel="icon"></link><link href="favicon-16x16.png" sizes="16x16" type="image/png" rel="icon"></link></head><body><a href="https://github.com/isri-aist/unified_robot_interface/" title="View on GitHub" aria-label="View on GitHub" style="position:fixed;top:16px;right:20px;z-index:100;color:#24292f;line-height:0"><svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a><div id="wrapper"><section class="section"><div class="container"><div class="columns"><aside class="column is-one-fifth"><ul class="menu-list"><p class="is-size-4">unified_robot_interface 1.0.0</p><p class="menu-label">Navigation</p><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="https://github.com/isri-aist/unified_robot_interface/">Repository</a></li><p class="menu-label">Pages</p><li><a href="docGettingStarted.html">GettingStarted</a><ul><li><a href="docGettingStarted.html#build">Build</a></li><li><a href="docGettingStarted.html#example-1-one-robot-on-the-control-pc-autostart">Example 1: one robot on the control PC (autostart)</a></li><li><a href="docGettingStarted.html#example-2-robot-on-its-own-pc">Example 2: robot on its own PC</a></li><li><a href="docGettingStarted.html#example-3-several-robots-one-controller">Example 3: several robots, one controller</a></li><li><a href="docGettingStarted.html#example-4-test-a-driver-without-the-manager">Example 4: test a driver without the manager</a></li><li><a href="docGettingStarted.html#generate-this-documentation">Generate this documentation</a></li></ul></li><li><a href="docCommandLine.html">CommandLine</a><ul><li><a href="docCommandLine.html#uri-manager">uri manager</a></li><li><a href="docCommandLine.html#uri-interface">uri interface</a></li><li><a href="docCommandLine.html#uri-viewer">uri viewer</a></li><li><a href="docCommandLine.html#uri-create-new-driver">uri create_new_driver</a></li></ul></li><li><a href="docCommunication.html">Communication</a></li><li><a href="docRobotManager.html">RobotManager</a></li><li><a href="docRobotInterface.html">RobotInterface</a></li><li><a href="docNewRobotDriver.html">NewRobotDriver</a></li><li><a href="docSupportedRobots.html">SupportedRobots</a></li><li><a href="docSimulation.html">Simulation</a><ul><li><a href="docSimulation.html#a-mujoco-driver">A MuJoCo driver</a></li><li><a href="docSimulation.html#several-robots-in-one-scene">Several robots in one scene</a></li><li><a href="docSimulation.html#isaac-sim">Isaac Sim</a></li><li><a href="docSimulation.html#things-to-know">Things to know</a></li></ul></li><p class="menu-label">API Documentation</p><li><a href="functions.html">Functions</a></li><li><a href="records.html">Records</a></li><li><a href="enums.html">Enums</a></li><li><a href="namespaces.html">Namespaces</a></li></ul></aside><div class="column" style="overflow-x: auto"><main class="content"><h1>Supported robots</h1>
+<p>URI talks to a robot through a <strong><code>RobotDriver</code> plugin</strong>. Each plugin is a
+standalone project in its own repository. This page lists the existing
+drivers. To support a robot that is not listed, see
+<a href="docNewRobotDriver.html">Create a new robot driver</a>.</p>
+<h2 id="drivers">Drivers</h2>
+<table>
+<thead>
+<tr>
+<th>Driver</th>
+<th>Robots</th>
+<th><code>robot_interface.driver</code></th>
+<th>SDK / transport</th>
+<th>Commands</th>
+<th>Repository</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rtde_driver</code></td>
+<td>Universal Robots (UR3e/UR5e/UR10e/...)</td>
+<td><code>RobotDriverRTDE</code></td>
+<td><a href="https://github.com/UniversalRobots/Universal_Robots_Client_Library">ur_client_library</a> (RTDE)</td>
+<td>position, velocity, torque</td>
+<td><a href="https://github.com/isri-aist/rtde_driver">isri-aist/rtde_driver</a></td>
+</tr>
+<tr>
+<td><code>kortex_driver</code></td>
+<td>Kinova Gen3, Gen3 Lite</td>
+<td><code>RobotDriverKortex</code></td>
+<td><a href="https://github.com/Kinovarobotics/kortex">Kortex API</a></td>
+<td>position, velocity, torque</td>
+<td><a href="https://github.com/isri-aist/kortex_driver">isri-aist/kortex_driver</a></td>
+</tr>
+<tr>
+<td><code>xarm_driver</code></td>
+<td>UFACTORY xArm</td>
+<td><code>RobotDriverxArm</code></td>
+<td>xArm C++ SDK</td>
+<td>position</td>
+<td><a href="https://github.com/isri-aist/xarm_driver">isri-aist/xarm_driver</a></td>
+</tr>
+<tr>
+<td><code>triorb_driver</code></td>
+<td>TriOrb omnidirectional mobile base</td>
+<td><code>RobotDriverTriOrb</code></td>
+<td>USB serial (<code>/dev/ttyACM0</code>)</td>
+<td>position, velocity (planar)</td>
+<td><a href="https://github.com/isri-aist/triorb_driver">isri-aist/triorb_driver</a></td>
+</tr>
+<tr>
+<td><code>ros2_control_driver</code></td>
+<td>Any robot running a ros2_control <code>controller_manager</code> (UR, Franka, OpenArm, Gazebo/MuJoCo sims, ...)</td>
+<td><code>RobotDriverROS2Control</code></td>
+<td>ROS 2 topics</td>
+<td>position, velocity, torque (depends on the active controllers)</td>
+<td><a href="https://github.com/isri-aist/ros2_control_driver">isri-aist/ros2_control_driver</a></td>
+</tr>
+<tr>
+<td><code>miroki_driver</code></td>
+<td>Enchanted Tools Mirokai</td>
+<td><code>RobotDriverMirokai</code></td>
+<td>ROS 2 topics (<code>enchanted_msgs</code>)</td>
+<td>position, velocity, torque</td>
+<td><a href="https://github.com/isri-aist/miroki_driver">isri-aist/miroki_driver</a> (private)</td>
+</tr>
+</tbody>
+</table>
+<p>&quot;Commands&quot; lists the <code>controller.mode</code> values the driver implements (see
+<a href="docRobotManager.html">Robot manager</a>). Asking for a mode the driver does not
+support makes the driver throw or ignore the command.</p>
+<p>To run a robot in simulation, see <a href="docSimulation.html">Simulation</a>.</p>
+<h2 id="messages">Messages</h2>
+<p>Every driver uses the same two messages, whatever the robot. <code>uri interface</code>
+fills a <code>robot_comm::State</code> from the driver's getters each cycle. It passes
+the <code>robot_comm::Command</code> it receives to <code>servoJ</code>, <code>speedJ</code> or <code>tauJ</code>,
+according to <code>controller.mode</code>. The full definitions are in
+<a href="docCommunication.html">Communication</a>.</p>
+<table>
+<thead>
+<tr>
+<th><code>State</code> field</th>
+<th>Filled from</th>
+<th>Drivers that provide it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>position</code> [rad]</td>
+<td><code>getActualQ()</code></td>
+<td>all</td>
+</tr>
+<tr>
+<td><code>velocity</code> [rad/s]</td>
+<td><code>getActualQd()</code></td>
+<td>all</td>
+</tr>
+<tr>
+<td><code>torque</code> [Nm]</td>
+<td><code>getJointTorques()</code></td>
+<td>all (<code>rtde_driver</code> reports the <em>target</em> torque)</td>
+</tr>
+<tr>
+<td><code>bodySensors</code> (IMU: orientation, angular velocity, linear acceleration)</td>
+<td><code>getIMUs()</code></td>
+<td><code>miroki_driver</code></td>
+</tr>
+<tr>
+<td><code>forceSensors</code> (F/T: force, torque, in sensor frame)</td>
+<td><code>getForceSensors()</code></td>
+<td>none yet</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th><code>Command</code> field</th>
+<th>Sent to</th>
+<th>Used when <code>controller.mode</code> is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>position</code> [rad]</td>
+<td><code>servoJ()</code></td>
+<td><code>position</code></td>
+</tr>
+<tr>
+<td><code>velocity</code> [rad/s]</td>
+<td><code>speedJ()</code></td>
+<td><code>velocity</code></td>
+</tr>
+<tr>
+<td><code>torque</code> [Nm]</td>
+<td><code>tauJ()</code></td>
+<td><code>torque</code></td>
+</tr>
+</tbody>
+</table>
+<p>Sensor data is matched by name to the RobotModule's body sensors and force
+sensors. A driver that doesn't override <code>getIMUs()</code> or <code>getForceSensors()</code>
+sends empty lists.</p>
+<h2 id="using-a-driver">Using a driver</h2>
+<p>Every driver is built and installed the same way. Use the <strong>same install
+prefix as URI</strong>, because <code>uri interface</code> only looks for plugins in
+<code>&lt;prefix&gt;/lib/robot_interface</code>:</p>
+<pre><code class="language-bash">cmake -S . -B build \
+  -DCMAKE_PREFIX_PATH=/path/to/install \
+  -DCMAKE_INSTALL_PREFIX=/path/to/install
+cmake --build build --parallel
+cmake --install build
+</code></pre>
+<p>Then point a robot entry of <code>mc_rtc.yaml</code> at the driver's class name:</p>
+<pre><code class="language-yaml">Robots:
+  ur5e:
+    module: UR5e
+    robot_interface:
+      driver: RobotDriverRTDE
+      ip: 192.168.1.100
+</code></pre>
+<p>Use <code>uri viewer -c &lt;config&gt;</code> to check that the plugin loads and reports joint
+state before starting <code>uri manager</code>.</p>
+<h2 id="driver-notes">Driver notes</h2>
+<h3>rtde_driver</h3>
+<ul>
+<li>Runs the UR controller in headless mode: it sends the URScript program
+itself, so no URCap is needed. Set <code>UR_SCRIPT_FILE</code> if
+<code>external_control.urscript</code> is not found automatically.</li>
+<li><code>sync()</code> blocks on each RTDE package, so the loop runs at the robot's RTDE
+rate (500 Hz by default).</li>
+</ul>
+<h3>kortex_driver</h3>
+<ul>
+<li>The Kortex API is downloaded by CMake if it is not found. Pass
+<code>-DKORTEX_ROOT_DIR=/opt/kortex</code> to use a local copy.</li>
+<li>Uses the robot's default username and password, which are hardcoded for now.</li>
+</ul>
+<h3>xarm_driver</h3>
+<ul>
+<li>Joint position control only (<code>set_mode(1)</code>, servo mode). <code>speedJ</code> and
+<code>tauJ</code> throw.</li>
+</ul>
+<h3>triorb_driver</h3>
+<ul>
+<li><code>ip</code> is the serial device, e.g. <code>/dev/ttyACM0</code>.</li>
+<li>State is the planar pose <code>[x, y, theta]</code>. Commands are <code>[vx, vy, wz]</code> in
+velocity mode. In position mode, the driver turns the pose error into
+velocity commands; it does not use TriOrb's native position commands.</li>
+<li>Resets the odometry origin at startup. Has a watchdog and sends zero
+velocity on shutdown.</li>
+</ul>
+<h3>ros2_control_driver</h3>
+<ul>
+<li>A plain ROS 2 node, not a hardware plugin. It reads <code>/joint_states</code> and
+publishes to <code>forward_command_controller</code> topics. <code>controller_manager</code> must
+already be running with the right controllers active.</li>
+<li>Takes a YAML file through <code>robot_interface.config_path</code> that names the
+topics; <code>ip</code> and <code>port</code> are ignored. Supporting a new ros2_control robot
+only needs a new config file.</li>
+<li>Requires a sourced ROS 2 workspace at build and run time.</li>
+</ul>
+<h3>miroki_driver</h3>
+<ul>
+<li>Talks to Mirokai's own onboard controller through its ROS 2 bridge, one
+topic pair per body part. Needs the <code>enchanted_msgs</code> package from the
+Mirokai SDK.</li>
+<li>The robot must be in User Control Mode with joints enabled, otherwise
+commands are silently ignored.</li>
+<li>Takes the joint-group mapping (<code>etc/miroki.yaml</code>) through
+<code>robot_interface.config_path</code>.</li>
+</ul>
+<h2 id="compatibility">Compatibility</h2>
+<p><code>uri interface</code> only loads plugins built against the current driver ABI
+(<code>ROBOT_DRIVER_ABI_VERSION</code> in <code>RobotDriverTemplate.h</code>, currently 3). A
+driver must use the current <code>create()</code> signature and call
+<code>ROBOT_DRIVER_EXPORT_ABI_VERSION()</code>. Otherwise it is refused with
+&quot;built against an incompatible interface&quot;.</p>
+<p>As of this writing, only <code>rtde_driver</code> and <code>ros2_control_driver</code> do this.
+<code>kortex_driver</code>, <code>xarm_driver</code> and <code>triorb_driver</code> still use the older
+<code>create(name, ip, port)</code> signature. <code>miroki_driver</code> has the new signature but
+does not export the ABI version. These drivers need that update before they
+load with the current <code>uri</code>.</p>
+</main></div></div></div></section></div><footer class="footer"><p>Documentation for unified_robot_interface 1.0.0.</p><p>Generated by <a href="https://hdoc.io/">hdoc</a> version 1.4.1-hdocInternal on 2026-10-07T01:42:13 UTC.</p><p class="has-text-grey-light">19AD43E11B2996</p></footer></body></html>

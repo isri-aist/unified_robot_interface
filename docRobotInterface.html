@@ -1,0 +1,260 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></meta><meta content="width=device-width, initial-scale=1" name="viewport"></meta><title>RobotInterface</title><link href="styles.css" rel="stylesheet"></link><script src="highlight.min.js"></script><script>hljs.highlightAll();</script><link href="katex.min.css" rel="stylesheet"></link><script src="katex.min.js"></script><script src="auto-render.min.js"></script><script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+        ],
+      });
+    });
+  </script><link href="apple-touch-icon.png" sizes="180x180" rel="apple-touch-icon"></link><link href="favicon-32x32.png" sizes="32x32" type="image/png" rel="icon"></link><link href="favicon-16x16.png" sizes="16x16" type="image/png" rel="icon"></link></head><body><a href="https://github.com/isri-aist/unified_robot_interface/" title="View on GitHub" aria-label="View on GitHub" style="position:fixed;top:16px;right:20px;z-index:100;color:#24292f;line-height:0"><svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a><div id="wrapper"><section class="section"><div class="container"><div class="columns"><aside class="column is-one-fifth"><ul class="menu-list"><p class="is-size-4">unified_robot_interface 1.0.0</p><p class="menu-label">Navigation</p><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="https://github.com/isri-aist/unified_robot_interface/">Repository</a></li><p class="menu-label">Pages</p><li><a href="docGettingStarted.html">GettingStarted</a><ul><li><a href="docGettingStarted.html#build">Build</a></li><li><a href="docGettingStarted.html#example-1-one-robot-on-the-control-pc-autostart">Example 1: one robot on the control PC (autostart)</a></li><li><a href="docGettingStarted.html#example-2-robot-on-its-own-pc">Example 2: robot on its own PC</a></li><li><a href="docGettingStarted.html#example-3-several-robots-one-controller">Example 3: several robots, one controller</a></li><li><a href="docGettingStarted.html#example-4-test-a-driver-without-the-manager">Example 4: test a driver without the manager</a></li><li><a href="docGettingStarted.html#generate-this-documentation">Generate this documentation</a></li></ul></li><li><a href="docCommandLine.html">CommandLine</a><ul><li><a href="docCommandLine.html#uri-manager">uri manager</a></li><li><a href="docCommandLine.html#uri-interface">uri interface</a></li><li><a href="docCommandLine.html#uri-viewer">uri viewer</a></li><li><a href="docCommandLine.html#uri-create-new-driver">uri create_new_driver</a></li></ul></li><li><a href="docCommunication.html">Communication</a></li><li><a href="docRobotManager.html">RobotManager</a></li><li><a href="docRobotInterface.html">RobotInterface</a></li><li><a href="docNewRobotDriver.html">NewRobotDriver</a></li><li><a href="docSupportedRobots.html">SupportedRobots</a></li><li><a href="docSimulation.html">Simulation</a><ul><li><a href="docSimulation.html#a-mujoco-driver">A MuJoCo driver</a></li><li><a href="docSimulation.html#several-robots-in-one-scene">Several robots in one scene</a></li><li><a href="docSimulation.html#isaac-sim">Isaac Sim</a></li><li><a href="docSimulation.html#things-to-know">Things to know</a></li></ul></li><p class="menu-label">API Documentation</p><li><a href="functions.html">Functions</a></li><li><a href="records.html">Records</a></li><li><a href="enums.html">Enums</a></li><li><a href="namespaces.html">Namespaces</a></li></ul></aside><div class="column" style="overflow-x: auto"><main class="content"><h1>Robot interface (<code>uri interface</code>)</h1>
+<p><code>uri interface</code> is the generic robot-side process (implemented by the
+<code>robot_interface::RobotInterface</code> class). There is one per robot.
+It contains no robot-specific code: at runtime it loads the <code>RobotDriver</code>
+plugin that the manager asks for, then shuttles data between that driver and
+<code>robot_comm</code>.</p>
+<p>It runs either:</p>
+<ul>
+<li><strong>on a robot-side PC</strong>, started by hand or by a service <strong>before</strong>
+<code>uri manager</code> (the manager skips a robot whose init query gets no answer), or</li>
+<li><strong>on the control PC</strong>, spawned automatically by <code>uri manager</code> when the robot has
+<code>robot_interface.autostart: true</code>.</li>
+</ul>
+<h2 id="command-line">Command line</h2>
+<p>All <code>uri</code> commands are listed in <a href="docCommandLine.html">Command line</a>.</p>
+<pre><code class="language-bash">uri interface -c &lt;config.yaml&gt; [-n &lt;name&gt;]
+</code></pre>
+<p>It shows up as <code>uri:&lt;name&gt;</code> in <code>ps</code>/<code>top</code> (truncated to 15 characters).</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-c, --config</code></td>
+<td>YAML file, <strong>required</strong></td>
+</tr>
+<tr>
+<td><code>-n, --name</code></td>
+<td>Robot name; overrides <code>name:</code> in the file. Must match the key under <code>Robots:</code> in the manager's <code>mc_rtc.yaml</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>The config file only needs what it takes to reach the manager. Everything
+else, including the driver, IP, port and control mode, arrives in the init
+query:</p>
+<pre><code class="language-yaml">name: ur5e
+network_interface:
+  protocol: zenoh
+  # configuration: /path/to/zenoh.json5   # if multicast discovery is unavailable
+</code></pre>
+<h2 id="lifecycle">Lifecycle</h2>
+<p><code>RobotInterface::run()</code> does the following:</p>
+<ol>
+<li>
+<p>Connects with a <code>robot_comm</code> <strong>client</strong> (<code>setupClient()</code>): it publishes
+<code>{name}/state</code> and subscribes to <code>{name}/command</code>.</p>
+</li>
+<li>
+<p>Registers a queryable on <code>{name}/init</code> and logs
+<code>'&lt;name&gt;' waiting for init query on '&lt;name&gt;/init'</code>.</p>
+</li>
+<li>
+<p>When the init query arrives (<code>handleInitQuery</code>):</p>
+<ul>
+<li>It parses the YAML and reads <code>controller.mode</code>, which defaults to
+<code>position</code>.</li>
+<li>It reads <code>robot_interface.driver</code>, <code>ip</code> (default <code>127.0.0.1</code>), <code>port</code>
+(default <code>0</code>), <code>config_path</code> (default <code>&quot;&quot;</code>) and the <code>grippers</code> map that
+the manager added from the RobotModule.</li>
+<li>It loads the driver through <code>PluginLoader&lt;RobotDriver&gt;</code> and replies <code>OK</code>.
+Any failure is replied as <code>ERROR: &lt;reason&gt;</code> and the process exits.</li>
+<li>The handler is idempotent. A repeated query, from the manager's retries,
+just replies <code>OK</code> again without reloading the driver.</li>
+</ul>
+</li>
+<li>
+<p><strong>Hold command</strong>: before the loop starts, it primes a &quot;last command&quot; so the
+robot receives a valid command from the very first cycle, even before
+mc_rtc has produced one:</p>
+<ul>
+<li><code>position</code>: the current <code>getActualQ()</code>, so the robot holds its pose</li>
+<li><code>velocity</code> / <code>torque</code>: zeros</li>
+</ul>
+</li>
+<li>
+<p><strong>Control loop</strong>, until <code>SIGINT</code>/<code>SIGTERM</code>:</p>
+<pre><code class="language-cpp">while(!interrupt)
+{
+  driver_-&gt;sync();     // blocks until the robot has a new state: this paces the loop
+  updateSensors();     // getActualQ/Qd, getJointTorques, getIMUs, getForceSensors -&gt; publish State
+  updateControl();     // latest Command (or previous one) -&gt; servoJ / speedJ / tauJ
+}
+</code></pre>
+<p>There is no timer in <code>RobotInterface</code>. The loop runs at whatever rate the
+driver's <code>sync()</code> returns, which should be the robot's native control rate.
+If no new command arrived this cycle, the previous one is sent again, so the
+robot always receives a continuous stream even though mc_rtc runs slower.</p>
+<p>A <code>Command</code> carries one of <code>position</code>, <code>velocity</code> or <code>torque</code>. The first
+non-empty one is applied, in that order.</p>
+</li>
+</ol>
+<h2 id="the-robotdriver-interface">The <code>RobotDriver</code> interface</h2>
+<p><code>robot_interface::RobotDriver</code>, in
+<code>robot_interface/include/robot_interface/RobotDriverTemplate.h</code>, is the whole
+contract between URI and a robot:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Required</th>
+<th>Called</th>
+<th>Contract</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sync()</code></td>
+<td>yes</td>
+<td>once per cycle, first</td>
+<td>Block until fresh state is available. It paces the loop, so avoid <code>sleep()</code>.</td>
+</tr>
+<tr>
+<td><code>getActualQ()</code></td>
+<td>yes</td>
+<td>every cycle</td>
+<td>Joint positions [rad], in the RobotModule's reference joint order. An empty vector means &quot;no state yet&quot;, and nothing is published.</td>
+</tr>
+<tr>
+<td><code>getActualQd()</code></td>
+<td>no</td>
+<td>every cycle</td>
+<td>Joint velocities [rad/s]; default <code>{}</code></td>
+</tr>
+<tr>
+<td><code>getJointTorques()</code></td>
+<td>yes</td>
+<td>every cycle</td>
+<td>Joint torques [Nm]</td>
+</tr>
+<tr>
+<td><code>getIMUs()</code></td>
+<td>no</td>
+<td>every cycle</td>
+<td><code>name -&gt; IMUData</code>, where the name matches a RobotModule body sensor; default none</td>
+</tr>
+<tr>
+<td><code>getForceSensors()</code></td>
+<td>no</td>
+<td>every cycle</td>
+<td><code>name -&gt; WrenchData</code>, where the name matches a RobotModule force sensor; default none</td>
+</tr>
+<tr>
+<td><code>servoJ(q)</code></td>
+<td>yes</td>
+<td>in <code>position</code> mode</td>
+<td>Send joint positions [rad]</td>
+</tr>
+<tr>
+<td><code>speedJ(qd)</code></td>
+<td>yes</td>
+<td>in <code>velocity</code> mode</td>
+<td>Send joint velocities [rad/s]</td>
+</tr>
+<tr>
+<td><code>tauJ(tau)</code></td>
+<td>yes</td>
+<td>in <code>torque</code> mode</td>
+<td>Send joint torques [Nm]</td>
+</tr>
+<tr>
+<td><code>setDataRead()</code></td>
+<td>no</td>
+<td>not called by <code>RobotInterface</code></td>
+<td>Optional hook</td>
+</tr>
+</tbody>
+</table>
+<p>The data types (<code>IMUData</code>, <code>WrenchData</code>, <code>GripperInfo</code>) are plain structs.
+They depend on neither mc_rtc nor <code>robot_comm</code>, so a driver links only the
+header-only <code>unified_robot_interface::robot_driver_api</code> target.</p>
+<h3>Plugin symbols</h3>
+<p>A driver <code>.so</code> exports four C functions. <code>mc_rtc::ObjectLoader</code> uses them to
+discover and create the driver:</p>
+<pre><code class="language-cpp">// Exports robot_driver_abi_version(), see &quot;ABI version&quot; below.
+ROBOT_DRIVER_EXPORT_ABI_VERSION()
+
+extern &quot;C&quot; {
+// Lists the class names this library provides (used as robot_interface.driver).
+void ROBOT_DRIVER_PLUGIN(std::vector&lt;std::string&gt; &amp; classes);
+
+// Must have EXACTLY this signature: the loader calls every driver through
+// one fixed function-pointer type.
+robot_interface::RobotDriver * create(const std::string &amp; name,         // class name
+                                         const std::string &amp; ip,
+                                         const uint16_t &amp; port,
+                                         const std::string &amp; config_path,
+                                         const std::vector&lt;robot_interface::GripperInfo&gt; &amp; grippers);
+
+void destroy(robot_interface::RobotDriver * ptr);
+}
+</code></pre>
+<p>Drivers that link ROS 2 (<code>rclcpp</code>) must also export
+<code>extern &quot;C&quot; void LOAD_GLOBAL() {}</code>. With it, the loader opens the library with
+<code>RTLD_GLOBAL</code>. Without it, <code>rclcpp</code> fails with
+<code>failed to create guard condition: context argument is null</code>.</p>
+<h3>ABI version</h3>
+<p>Drivers are separate projects built against <code>RobotDriverTemplate.h</code>. Adding,
+removing or reordering a virtual function of <code>RobotDriver</code> (or changing
+<code>create()</code>'s signature) changes the binary layout. A driver built against the
+older header would then call the wrong function, typically a segfault on the
+first new call.</p>
+<p>To turn that into a clear error, the header defines
+<code>ROBOT_DRIVER_ABI_VERSION</code>, and each driver embeds it with
+<code>ROBOT_DRIVER_EXPORT_ABI_VERSION()</code>. When <code>uri interface</code> or <code>uri viewer</code>
+scans the plugin directory, it reads that value from every library.
+<code>load()</code> refuses a driver whose version differs, or that has none:</p>
+<pre><code class="language-text">[PluginLoader] Plugin 'RobotDriverRTDE' (/opt/uri/lib/robot_interface/libRobotDriverRTDE.so) was built against an incompatible interface: ABI version 2 (expected ABI version 3). Rebuild and reinstall it against the current headers.
+</code></pre>
+<p>With autostart, the manager receives that message as the init reply and drops
+the robot. The fix is always to rebuild and reinstall the driver.</p>
+<p><strong>When you change <code>RobotDriver</code></strong>, increase <code>ROBOT_DRIVER_ABI_VERSION</code> in
+<code>RobotDriverTemplate.h</code> in the same commit.</p>
+<h3>Plugin lookup</h3>
+<p>Drivers are searched <strong>only</strong> in <code>&lt;CMAKE_INSTALL_PREFIX&gt;/lib/robot_interface</code>,
+using the prefix <code>robot_interface</code> was built with (<code>ROBOT_INTERFACE_INSTALL_PREFIX</code>
+in the generated <code>robot_interface/config.h</code>). No environment variable adds
+extra paths. A driver installed elsewhere is not found. When a driver is
+missing, the loader logs the searched path and the drivers it did find:</p>
+<pre><code class="language-text">[PluginLoader] Plugin 'RobotDriverFoo' not found
+[PluginLoader] Searched paths:
+  - /opt/uri/lib/robot_interface
+[PluginLoader] Available plugins:
+  - RobotDriverRTDE
+  - RobotDriverROS2Control
+</code></pre>
+<h2 id="example-bring-up-a-robot-side-pc">Example: bring up a robot-side PC</h2>
+<pre><code class="language-bash"># 1. Install URI and the driver with the same prefix on the robot PC.
+cmake --install build                          # URI
+cmake --install my_driver/build                # driver -&gt; &lt;prefix&gt;/lib/robot_interface
+
+# 2. Check that the driver talks to the robot, without any networking.
+uri viewer -c viewer.yaml              # see Getting started, example 4
+
+# 3. Start the interface and leave it running.
+uri interface -c ur5e_robot.yaml
+# [RobotInterface] 'ur5e' waiting for init query on 'ur5e/init'
+
+# 4. On the control PC: uri manager -c mc_rtc.yaml
+# [RobotInterface] 'ur5e' loading driver 'RobotDriverRTDE' (192.168.1.6:0), config_path: '', 0 gripper(s)
+# [RobotInterface] 'ur5e' initialized, starting control loop
+</code></pre>
+<p>To write the driver itself, see
+<a href="docNewRobotDriver.html">Create a new robot driver</a>.</p>
+<hr />
+<p><a href="https://unit.aist.go.jp/isri/isri-jrl/en/"><img src="images/jrl-logo.png" alt="CNRS-AIST JRL (Joint Robotics Laboratory)" /></a><a href="https://www.cnrs.fr/"><img src="images/cnrs-logo.png" alt="CNRS" /></a><a href="https://www.aist.go.jp/index_en.html"><img src="images/aist-logo.png" alt="AIST" /></a></p>
+<p>Copyright © CNRS-AIST JRL 2026</p>
+</main></div></div></div></section></div><footer class="footer"><p>Documentation for unified_robot_interface 1.0.0.</p><p>Generated by <a href="https://hdoc.io/">hdoc</a> version 1.4.1-hdocInternal on 2026-10-07T01:42:13 UTC.</p><p class="has-text-grey-light">19AD43E11B2996</p></footer></body></html>

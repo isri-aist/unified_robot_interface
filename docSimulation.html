@@ -1,0 +1,137 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></meta><meta content="width=device-width, initial-scale=1" name="viewport"></meta><title>Simulation</title><link href="styles.css" rel="stylesheet"></link><script src="highlight.min.js"></script><script>hljs.highlightAll();</script><link href="katex.min.css" rel="stylesheet"></link><script src="katex.min.js"></script><script src="auto-render.min.js"></script><script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+        ],
+      });
+    });
+  </script><link href="apple-touch-icon.png" sizes="180x180" rel="apple-touch-icon"></link><link href="favicon-32x32.png" sizes="32x32" type="image/png" rel="icon"></link><link href="favicon-16x16.png" sizes="16x16" type="image/png" rel="icon"></link></head><body><a href="https://github.com/isri-aist/unified_robot_interface/" title="View on GitHub" aria-label="View on GitHub" style="position:fixed;top:16px;right:20px;z-index:100;color:#24292f;line-height:0"><svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a><div id="wrapper"><section class="section"><div class="container"><div class="columns"><aside class="column is-one-fifth"><ul class="menu-list"><p class="is-size-4">unified_robot_interface 1.0.0</p><p class="menu-label">Navigation</p><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="https://github.com/isri-aist/unified_robot_interface/">Repository</a></li><p class="menu-label">Pages</p><li><a href="docGettingStarted.html">GettingStarted</a><ul><li><a href="docGettingStarted.html#build">Build</a></li><li><a href="docGettingStarted.html#example-1-one-robot-on-the-control-pc-autostart">Example 1: one robot on the control PC (autostart)</a></li><li><a href="docGettingStarted.html#example-2-robot-on-its-own-pc">Example 2: robot on its own PC</a></li><li><a href="docGettingStarted.html#example-3-several-robots-one-controller">Example 3: several robots, one controller</a></li><li><a href="docGettingStarted.html#example-4-test-a-driver-without-the-manager">Example 4: test a driver without the manager</a></li><li><a href="docGettingStarted.html#generate-this-documentation">Generate this documentation</a></li></ul></li><li><a href="docCommandLine.html">CommandLine</a><ul><li><a href="docCommandLine.html#uri-manager">uri manager</a></li><li><a href="docCommandLine.html#uri-interface">uri interface</a></li><li><a href="docCommandLine.html#uri-viewer">uri viewer</a></li><li><a href="docCommandLine.html#uri-create-new-driver">uri create_new_driver</a></li></ul></li><li><a href="docCommunication.html">Communication</a></li><li><a href="docRobotManager.html">RobotManager</a></li><li><a href="docRobotInterface.html">RobotInterface</a></li><li><a href="docNewRobotDriver.html">NewRobotDriver</a></li><li><a href="docSupportedRobots.html">SupportedRobots</a></li><li><a href="docSimulation.html">Simulation</a><ul><li><a href="docSimulation.html#a-mujoco-driver">A MuJoCo driver</a></li><li><a href="docSimulation.html#several-robots-in-one-scene">Several robots in one scene</a></li><li><a href="docSimulation.html#isaac-sim">Isaac Sim</a></li><li><a href="docSimulation.html#things-to-know">Things to know</a></li></ul></li><p class="menu-label">API Documentation</p><li><a href="functions.html">Functions</a></li><li><a href="records.html">Records</a></li><li><a href="enums.html">Enums</a></li><li><a href="namespaces.html">Namespaces</a></li></ul></aside><div class="column" style="overflow-x: auto"><main class="content"><h1>Simulation</h1>
+<p>For URI, a simulator is just another robot. <code>uri manager</code> and
+<code>uri interface</code> cannot tell a simulated robot from a real one: both are a
+<code>RobotDriver</code> plugin that reports a state and accepts commands. Switching
+between simulation and hardware means changing the <code>driver</code> of a robot entry
+in <code>mc_rtc.yaml</code>, nothing else.</p>
+<p>There are three ways to simulate robots:</p>
+<ul>
+<li><strong>Through ros2_control</strong>, available today: run the simulator behind a
+ros2_control <code>controller_manager</code> (<code>mujoco_ros2_control</code>,
+<code>gz_ros2_control</code>, ...) and use <code>ros2_control_driver</code>. See
+<a href="docSupportedRobots.html">Supported robots</a>.</li>
+<li><strong>With a simulation driver</strong> that embeds the simulator itself. This page
+explains how to write one, taking a MuJoCo driver as the example. No such
+driver exists yet.</li>
+<li><strong>With a simulator that speaks <code>robot_comm</code></strong> directly, for several robots
+in one world. See <a href="#several-robots-in-one-scene">Several robots in one scene</a>.</li>
+</ul>
+<h2 id="a-mujoco-driver">A MuJoCo driver</h2>
+<p>Scaffold it like any other driver (see
+<a href="docNewRobotDriver.html">Create a new robot driver</a>):</p>
+<pre><code class="language-bash">uri create_new_driver MuJoCo ~/devel     # -&gt; mujoco_driver, class RobotDriverMuJoCo
+</code></pre>
+<p>Then implement each <code>RobotDriver</code> method against the simulation:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>In a simulation driver</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>constructor</td>
+<td>Load the model (e.g. an MJCF file passed through <code>config_path</code>). Map each RobotModule joint to its simulator joint and actuator, by name. Set the initial joint positions.</td>
+</tr>
+<tr>
+<td><code>sync()</code></td>
+<td>Apply the latest command, advance the physics by one robot period, then wait until that period has elapsed in real time (see below).</td>
+</tr>
+<tr>
+<td><code>getActualQ()</code> / <code>getActualQd()</code></td>
+<td>Read the simulated joint positions and velocities, in the RobotModule's joint order.</td>
+</tr>
+<tr>
+<td><code>getJointTorques()</code></td>
+<td>Read the torques applied by the actuators.</td>
+</tr>
+<tr>
+<td><code>getIMUs()</code> / <code>getForceSensors()</code></td>
+<td>Read the simulated sensors, keyed by the RobotModule's sensor names.</td>
+</tr>
+<tr>
+<td><code>servoJ()</code> / <code>speedJ()</code> / <code>tauJ()</code></td>
+<td>Store the command. <code>sync()</code> applies it on the next step: directly for matching actuators, or through a PD loop to turn position targets into torques.</td>
+</tr>
+</tbody>
+</table>
+<p>The driver does not depend on mc_rtc: the RobotModule only provides the joint
+and sensor names, which the simulation model must use too.</p>
+<p>Configure the robot like a real one, with <code>autostart</code> so the simulation runs
+on the control PC:</p>
+<pre><code class="language-yaml">Robots:
+  ur5e:
+    module: UR5e
+    controller:
+      mode: position
+      time_step: 0.001
+    robot_interface:
+      driver: RobotDriverMuJoCo
+      config_path: /path/to/ur5e_scene.xml
+      autostart: true
+    network_interface:
+      protocol: zenoh/shm
+</code></pre>
+<p><code>ip</code> and <code>port</code> are optional and can be ignored by the driver.</p>
+<h2 id="several-robots-in-one-scene">Several robots in one scene</h2>
+<p>A simulator like mc_mujoco runs one world with several robots and objects.
+A <code>RobotDriver</code> cannot do that, because a driver serves a single robot. The
+simulator instead takes the place of <code>uri interface</code> for all of its robots:
+it links <code>robot_comm</code> and opens <strong>one communication interface per robot</strong>.
+For each simulated robot, it must:</p>
+<ol>
+<li>Create a <code>robot_comm::Communication</code> for the robot's name
+(<code>CommunicationFactory::makeCommunication</code>) and call <code>setupClient()</code>.</li>
+<li>Answer the init query on <code>{name}/init</code> with <code>&quot;OK&quot;</code>. The payload is the
+robot's configuration, including <code>controller.mode</code>.</li>
+<li>Every robot period, <code>send()</code> a <code>State</code> and apply the latest <code>Command</code>
+from <code>receive()</code>.</li>
+</ol>
+<pre><code class="language-text">                        ur5e/init, ur5e/state, ur5e/command
+uri manager (mc_rtc) &lt;----------------------------------------&gt; simulator
+                        panda/init, panda/state, panda/command   (one world)
+</code></pre>
+<p>The manager sees no difference. Set <code>autostart: false</code> for these robots so
+it doesn't start a <code>uri interface</code> for them, and start the simulator before
+the manager. <a href="docCommunication.html">Communication</a> describes the topics
+and messages.</p>
+<h2 id="isaac-sim">Isaac Sim</h2>
+<p>Isaac Sim's ROS 2 bridge exchanges <code>sensor_msgs/JointState</code> in both
+directions. <code>ros2_control_driver</code> can read its joint states directly (set
+<code>joint_states_topic</code>), but publishes commands as <code>Float64MultiArray</code>, which
+Isaac does not accept. Put a <code>controller_manager</code> in between, using the
+<a href="https://github.com/PickNikRobotics/topic_based_ros2_control"><code>topic_based_ros2_control</code></a>
+hardware plugin with a <code>joint_state_broadcaster</code> and a forward controller,
+and use <code>ros2_control_driver</code> as for any ros2_control robot.</p>
+<p>Set Isaac's physics and publish rate to the robot's <code>controller.time_step</code>,
+and keep it running in real time (see below).</p>
+<h2 id="things-to-know">Things to know</h2>
+<ul>
+<li><strong>Run in real time.</strong> <code>uri manager</code> ticks on the wall clock, not on the
+robots' states. <code>sync()</code> must therefore return once per
+<code>controller.time_step</code> of real time: step the physics, then sleep until the
+step's deadline. A simulation that runs faster or slower than real time
+gets out of step with the controller. You can run several physics
+substeps per <code>sync()</code> if the model needs a smaller time step.</li>
+<li><strong>One robot per driver.</strong> Each robot runs its own <code>uri interface</code> and its
+own driver instance, so robots in separate simulation drivers are in
+separate worlds and cannot touch each other. For a shared scene, see
+<a href="#several-robots-in-one-scene">Several robots in one scene</a>.</li>
+<li><strong>No floating-base state yet.</strong> A <code>State</code> carries joint, IMU and force
+sensor data only. The ground-truth pose of a floating base, which a
+simulator knows, is not sent to the controller. Mobile and legged robots
+must estimate it from the sensors, as on hardware.</li>
+<li><strong>Test it on its own first.</strong> <code>uri viewer -c &lt;config&gt;</code> loads the driver and
+prints its joint state without the manager, as for any driver.</li>
+</ul>
+</main></div></div></div></section></div><footer class="footer"><p>Documentation for unified_robot_interface 1.0.0.</p><p>Generated by <a href="https://hdoc.io/">hdoc</a> version 1.4.1-hdocInternal on 2026-10-07T01:42:13 UTC.</p><p class="has-text-grey-light">19AD43E11B2996</p></footer></body></html>

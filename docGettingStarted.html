@@ -1,0 +1,274 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"></meta><meta content="width=device-width, initial-scale=1" name="viewport"></meta><title>GettingStarted</title><link href="styles.css" rel="stylesheet"></link><script src="highlight.min.js"></script><script>hljs.highlightAll();</script><link href="katex.min.css" rel="stylesheet"></link><script src="katex.min.js"></script><script src="auto-render.min.js"></script><script>
+    document.addEventListener("DOMContentLoaded", function() {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '$', right: '$', display: false},
+        ],
+      });
+    });
+  </script><link href="apple-touch-icon.png" sizes="180x180" rel="apple-touch-icon"></link><link href="favicon-32x32.png" sizes="32x32" type="image/png" rel="icon"></link><link href="favicon-16x16.png" sizes="16x16" type="image/png" rel="icon"></link></head><body><a href="https://github.com/isri-aist/unified_robot_interface/" title="View on GitHub" aria-label="View on GitHub" style="position:fixed;top:16px;right:20px;z-index:100;color:#24292f;line-height:0"><svg width="32" height="32" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a><div id="wrapper"><section class="section"><div class="container"><div class="columns"><aside class="column is-one-fifth"><ul class="menu-list"><p class="is-size-4">unified_robot_interface 1.0.0</p><p class="menu-label">Navigation</p><li><a href="index.html">Home</a></li><li><a href="search.html">Search</a></li><li><a href="https://github.com/isri-aist/unified_robot_interface/">Repository</a></li><p class="menu-label">Pages</p><li><a href="docGettingStarted.html">GettingStarted</a><ul><li><a href="docGettingStarted.html#build">Build</a></li><li><a href="docGettingStarted.html#example-1-one-robot-on-the-control-pc-autostart">Example 1: one robot on the control PC (autostart)</a></li><li><a href="docGettingStarted.html#example-2-robot-on-its-own-pc">Example 2: robot on its own PC</a></li><li><a href="docGettingStarted.html#example-3-several-robots-one-controller">Example 3: several robots, one controller</a></li><li><a href="docGettingStarted.html#example-4-test-a-driver-without-the-manager">Example 4: test a driver without the manager</a></li><li><a href="docGettingStarted.html#generate-this-documentation">Generate this documentation</a></li></ul></li><li><a href="docCommandLine.html">CommandLine</a><ul><li><a href="docCommandLine.html#uri-manager">uri manager</a></li><li><a href="docCommandLine.html#uri-interface">uri interface</a></li><li><a href="docCommandLine.html#uri-viewer">uri viewer</a></li><li><a href="docCommandLine.html#uri-create-new-driver">uri create_new_driver</a></li></ul></li><li><a href="docCommunication.html">Communication</a></li><li><a href="docRobotManager.html">RobotManager</a></li><li><a href="docRobotInterface.html">RobotInterface</a></li><li><a href="docNewRobotDriver.html">NewRobotDriver</a></li><li><a href="docSupportedRobots.html">SupportedRobots</a></li><li><a href="docSimulation.html">Simulation</a><ul><li><a href="docSimulation.html#a-mujoco-driver">A MuJoCo driver</a></li><li><a href="docSimulation.html#several-robots-in-one-scene">Several robots in one scene</a></li><li><a href="docSimulation.html#isaac-sim">Isaac Sim</a></li><li><a href="docSimulation.html#things-to-know">Things to know</a></li></ul></li><p class="menu-label">API Documentation</p><li><a href="functions.html">Functions</a></li><li><a href="records.html">Records</a></li><li><a href="enums.html">Enums</a></li><li><a href="namespaces.html">Namespaces</a></li></ul></aside><div class="column" style="overflow-x: auto"><main class="content"><h1>Getting started</h1>
+<p>This page covers building URI, running it in the most common setups, and
+regenerating this documentation.</p>
+<h2 id="build">Build</h2>
+<h3>mc_rtc and other controllers</h3>
+<p>URI is not meant to be tied to mc_rtc. The controller that runs in
+<code>uri manager</code> is a plugin (see
+<a href="docRobotManager.html">Controller backend</a>), and driver plugins do not
+depend on mc_rtc at all. Today, though, <strong>mc_rtc is the only backend</strong>, and
+the URI libraries still link mc_rtc for logging and plugin loading. So for
+now, installing URI means installing it next to mc_rtc. This will change as
+other controllers are supported.</p>
+<p>There are three ways to install it:</p>
+<ul>
+<li><strong>with mc-rtc-superbuild</strong>, the simplest if you
+already build mc_rtc with it;</li>
+<li><strong>manually</strong>, against an existing mc_rtc install;</li>
+<li><strong>in the devcontainer</strong>, for a ready-made development
+environment.</li>
+</ul>
+<h3>With mc-rtc-superbuild</h3>
+<p><a href="https://github.com/mc-rtc/mc-rtc-superbuild">mc-rtc-superbuild</a> builds and
+installs mc_rtc and its dependencies. Its <code>WITH_URI</code> option adds URI and
+the dependencies mc_rtc doesn't provide:</p>
+<table>
+<thead>
+<tr>
+<th>Project</th>
+<th>Version</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FlatBuffers</td>
+<td>v25.12.19</td>
+<td>Ubuntu's package is too old</td>
+</tr>
+<tr>
+<td>zenoh-c</td>
+<td>1.9.0</td>
+<td>Built with shared memory, for the <code>zenoh/shm</code> protocol</td>
+</tr>
+<tr>
+<td>zenoh-cpp</td>
+<td>1.9.0</td>
+<td>zenoh-c backend only</td>
+</tr>
+<tr>
+<td>URI</td>
+<td><code>main</code></td>
+<td>Tests and Protobuf disabled</td>
+</tr>
+</tbody>
+</table>
+<p>Enable the option when you configure the superbuild. zenoh-c is written in
+Rust: if <code>cargo</code> is not found, the configure step installs a Rust toolchain
+with <a href="https://rustup.rs">rustup</a> in <code>~/.cargo</code>.</p>
+<pre><code class="language-bash">cd mc-rtc-superbuild
+cmake --preset relwithdebinfo -DWITH_URI=ON
+cmake --build --preset relwithdebinfo
+</code></pre>
+<p>Everything is installed in the superbuild's install prefix. Build your
+drivers with that same prefix (see below).</p>
+<h3>Manual installation</h3>
+<p>Dependencies:</p>
+<ul>
+<li><a href="https://jrl-umi3218.github.io/mc_rtc/">mc_rtc</a></li>
+<li><code>zenoh-c</code> (built with <code>-DZENOHC_BUILD_WITH_SHARED_MEMORY=ON</code>, needs Rust)
+and <code>zenoh-cpp</code> (built with <code>-DZENOHCXX_ZENOHC=ON -DZENOHCXX_ZENOHPICO=OFF</code>)</li>
+<li>FlatBuffers, a recent version that provides <code>flatbuffers_generate_headers()</code>;
+Protobuf is optional (<code>-DWITH_PROTOBUF=OFF</code> to skip it)</li>
+<li>GTest, only for <code>-DBUILD_TESTING=ON</code></li>
+</ul>
+<p>Then configure, build and install:</p>
+<pre><code class="language-bash">cmake -S . -B build \
+  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_PREFIX_PATH=&quot;/path/to/mc_rtc/install;/path/to/extra/deps&quot; \
+  -DCMAKE_INSTALL_PREFIX=/path/to/install
+cmake --build build --parallel
+cmake --install build
+</code></pre>
+<h3>In the devcontainer</h3>
+<p>The devcontainer in <code>.devcontainer/</code> installs all the dependencies, with
+mc_rtc from its <code>head</code> apt repository, then builds and installs URI on first
+start.
+See the top-level <code>README.md</code>.</p>
+<h3>After installing</h3>
+<p>Whichever way you install, you also need the RobotModule of each robot you
+want to control (e.g. <code>mc_ur5e</code>), and a driver plugin for it (see
+<a href="docSupportedRobots.html">Supported robots</a>).</p>
+<p>The install prefix matters. <code>uri interface</code> looks for driver plugins <strong>only</strong>
+in <code>&lt;CMAKE_INSTALL_PREFIX&gt;/lib/robot_interface</code>. That path is compiled in and
+has no environment-variable override. Drivers must be installed with the same
+prefix. See <a href="docRobotInterface.html">Robot interface</a>.</p>
+<p>The build and the install both run <code>setcap cap_sys_nice+eip</code> on <code>uri</code> through
+<code>sudo</code>, so you may be prompted for your password. <code>uri</code> needs this capability
+to request <code>SCHED_DEADLINE</code>. Because of it, the dynamic loader ignores
+<code>LD_LIBRARY_PATH</code> when running <code>uri</code>. See
+<a href="docRobotManager.html">Troubleshooting</a> if the manager crashes on exit with
+CycloneDDS.</p>
+<p>This installs one executable, <code>uri</code>, with a subcommand per tool (<code>uri manager</code>,
+<code>uri interface</code>, ...). See <a href="docCommandLine.html">Command line</a> for all of them
+and their options.</p>
+<h3>Before running <code>uri manager</code></h3>
+<p><code>uri manager</code> calls <code>mlockall()</code> at startup and exits with code <code>-2</code> if that fails.
+Raise the memlock limit for your user in <code>/etc/security/limits.conf</code>, for
+example:</p>
+<pre><code class="language-text">youruser  -  memlock  unlimited
+</code></pre>
+<p>Log out and back in after changing it. Also source your mc_rtc environment
+(e.g. <code>setup_mc_rtc.sh</code>) so that <code>uri</code> finds mc_rtc's RobotModules and
+controllers.</p>
+<h2 id="example-1-one-robot-on-the-control-pc-autostart">Example 1: one robot on the control PC (autostart)</h2>
+<p>This is the simplest setup: the robot, or its simulator, is reachable from the
+control PC, so no separate robot-side PC is needed. <code>uri manager</code> starts
+<code>uri interface</code> itself.</p>
+<p><code>robot_manager/etc/mc_rtc_ur5e_sim.yaml</code> drives a Gazebo UR5e through
+<code>ros2_control</code>:</p>
+<pre><code class="language-yaml">MainRobot: UR5e
+Enabled: Posture
+Timestep: 0.005
+
+Robots:
+  ur5e:
+    module: UR5e                 # mc_rtc RobotModule
+    network_interface:
+      protocol: zenoh
+    robot_interface:
+      driver: RobotDriverROS2Control
+      ip: 127.0.0.1              # unused by this driver, but required
+      port: 0
+      config_path: /path/to/ros2_control_driver/etc/ur5e.yaml
+      autostart: true            # uri manager spawns uri interface itself
+</code></pre>
+<p>Prerequisites:</p>
+<ul>
+<li>the <code>ros2_control_driver</code> plugin, installed with the same prefix as URI</li>
+<li>the UR5e simulation running, with its <code>controller_manager</code> up</li>
+<li><code>config_path</code> edited to point to your checkout</li>
+</ul>
+<p>Run:</p>
+<pre><code class="language-bash">uri manager -c robot_manager/etc/mc_rtc_ur5e_sim.yaml
+</code></pre>
+<p>What happens, in order:</p>
+<ol>
+<li><code>uri</code> starts a local Zenoh router and spawns
+<code>uri interface -c /tmp/robot_manager_ur5e_interface.yaml -n ur5e</code>.</li>
+<li>It sends the robot's configuration on the <code>ur5e/init</code> query. The
+interface loads <code>RobotDriverROS2Control</code> and replies <code>OK</code>.</li>
+<li>The first <code>ur5e/state</code> message initializes the mc_rtc robot from the real
+joint positions. mc_rtc then starts running the <code>Posture</code> controller.</li>
+</ol>
+<p>Stop with <code>Ctrl+C</code>. <code>uri manager</code> sends <code>SIGTERM</code> to the spawned <code>uri interface</code>, and
+<code>SIGKILL</code> if it has not exited within 5 s.</p>
+<h2 id="example-2-robot-on-its-own-pc">Example 2: robot on its own PC</h2>
+<p>Use this when the robot is connected to a different machine, for example a
+real-time PC next to the arm.</p>
+<p><strong>On the robot PC</strong>, write a <code>uri interface</code> config file. It only needs the
+robot's name and how to reach the manager:</p>
+<pre><code class="language-yaml"># ur5e_robot.yaml
+name: ur5e
+network_interface:
+  protocol: zenoh
+</code></pre>
+<p>Then start it <strong>before</strong> <code>uri manager</code>. It waits for the manager's init query:</p>
+<pre><code class="language-bash">uri interface -c ur5e_robot.yaml
+# [RobotInterface] 'ur5e' waiting for init query on 'ur5e/init'
+</code></pre>
+<p><strong>On the control PC</strong>, reference the same robot name in <code>mc_rtc.yaml</code>, without
+<code>autostart</code>:</p>
+<pre><code class="language-yaml">MainRobot: UR5e
+Enabled: Posture
+Timestep: 0.005
+
+Robots:
+  ur5e:
+    module: UR5e
+    controller:
+      mode: position
+      time_step: 0.001           # the robot's own control period
+    network_interface:
+      protocol: zenoh
+    robot_interface:
+      driver: RobotDriverRTDE    # loaded on the robot PC, not here
+      ip: 192.168.1.6            # passed to the driver on the robot PC
+      port: 0
+</code></pre>
+<pre><code class="language-bash">uri manager -c mc_rtc.yaml
+</code></pre>
+<p>The driver name, IP, port and <code>config_path</code> all come from the manager's
+config. They are sent in the init query, so switching drivers never requires
+touching the robot PC's config. The driver <code>.so</code> must be installed on the
+robot PC, though.</p>
+<p>Both Zenoh peers must be able to discover each other. On a single LAN,
+Zenoh's default multicast scouting finds them. Otherwise, point both sides at
+a Zenoh config file that lists explicit endpoints (<code>network_interface.configuration</code>).
+See <a href="docCommunication.html">Communication</a>.</p>
+<h2 id="example-3-several-robots-one-controller">Example 3: several robots, one controller</h2>
+<p>Add more entries under <code>Robots:</code>. Each one gets its own <code>uri interface</code> and
+its own topics. <code>base:</code> copies another robot's entry and overrides keys:</p>
+<pre><code class="language-yaml">Robots:
+  ur5e_left:
+    module: UR5e
+    network_interface: { protocol: zenoh }
+    robot_interface: { driver: RobotDriverRTDE, ip: 192.168.1.2, port: 0 }
+
+  ur5e_right:
+    base: ur5e_left              # everything from ur5e_left...
+    robot_interface:             # ...except the robot address
+      driver: RobotDriverRTDE
+      ip: 192.168.1.3
+      port: 0
+</code></pre>
+<p>Start one <code>uri interface -c &lt;file&gt; -n ur5e_left</code> and one with
+<code>-n ur5e_right</code>, or set <code>autostart: true</code> on both. Then run <code>uri manager</code>.</p>
+<h2 id="example-4-test-a-driver-without-the-manager">Example 4: test a driver without the manager</h2>
+<p><code>uri viewer</code> loads a driver plugin directly and prints its joint state
+in the terminal. It needs neither mc_rtc's controller nor Zenoh, so it is the
+quickest way to check that a new driver connects and reads sensible values:</p>
+<pre><code class="language-yaml"># viewer.yaml
+robot_interface:
+  driver: RobotDriverRTDE
+  ip: 192.168.1.6
+  port: 0
+  # config_path: /path/to/driver_config.yaml
+</code></pre>
+<pre><code class="language-bash">uri viewer -c viewer.yaml --rate 10
+</code></pre>
+<p>It also accepts the manager's <code>mc_rtc.yaml</code> directly and uses that robot's
+<code>robot_interface</code> section. Pick the robot with <code>-n</code> when there are several:</p>
+<pre><code class="language-bash">uri viewer -c robot_manager/etc/mc_rtc_ur5e_sim.yaml
+uri viewer -c robot_manager/etc/mc_rtc_callm.yaml -n &lt;robot&gt;
+</code></pre>
+<pre><code class="language-text">Robot State Viewer — RobotDriverRTDE @ 192.168.1.6
+------------------------------------------------------------
+Joint │  Position (rad)  │  Velocity (rad/s)  │  Torque (Nm)
+──────┼──────────────────┼────────────────────┼─────────────
+  0   │      -0.0012   │       0.0000   │       0.1523
+  ...
+</code></pre>
+<p>It only reads state. It never calls <code>servoJ</code>/<code>speedJ</code>/<code>tauJ</code>.</p>
+<h2 id="generate-this-documentation">Generate this documentation</h2>
+<p>The documentation is generated by <a href="https://hdoc.io">hdoc</a> from
+<code>build/compile_commands.json</code> and the Markdown pages in <code>docs/</code>, as configured
+in <code>.hdoc.toml</code>. On every push to <code>main</code>, the <code>Documentation</code> workflow
+(<code>.github/workflows/docs.yaml</code>) regenerates it and publishes it to the
+<code>gh-pages</code> branch. To generate it locally:</p>
+<pre><code class="language-bash">cmake -S . -B build          # compile_commands.json must exist
+scripts/gen-hdoc-docs.sh
+xdg-open hdoc-output/index.html
+</code></pre>
+<p>On the first run, the script builds hdoc 1.4.1 against LLVM/Clang 14 and
+caches it in <code>~/.cache/hdoc-build</code>, which takes a few minutes. Install the
+toolchain with:</p>
+<pre><code class="language-bash">sudo apt-get install llvm-14-dev libclang-14-dev clang-14
+</code></pre>
+<p>To add a page, create <code>docs/&lt;Name&gt;.md</code> and add it to <code>[pages] paths</code> in
+<code>.hdoc.toml</code>. It is published as <code>doc&lt;Name&gt;.html</code>, and its file name is the
+sidebar title. Images go in <code>docs/images/</code>; the script copies that folder
+into the output.</p>
+<hr />
+<p><a href="https://unit.aist.go.jp/isri/isri-jrl/en/"><img src="images/jrl-logo.png" alt="CNRS-AIST JRL (Joint Robotics Laboratory)" /></a><a href="https://www.cnrs.fr/"><img src="images/cnrs-logo.png" alt="CNRS" /></a><a href="https://www.aist.go.jp/index_en.html"><img src="images/aist-logo.png" alt="AIST" /></a></p>
+<p>Copyright © CNRS-AIST JRL 2026</p>
+</main></div></div></div></section></div><footer class="footer"><p>Documentation for unified_robot_interface 1.0.0.</p><p>Generated by <a href="https://hdoc.io/">hdoc</a> version 1.4.1-hdocInternal on 2026-10-07T01:42:13 UTC.</p><p class="has-text-grey-light">19AD43E11B2996</p></footer></body></html>
