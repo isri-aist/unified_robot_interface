@@ -9,33 +9,30 @@ project(
 )
 
 # ── jrl-cmakemodules v2 ───────────────────────────────────────────────────────
-include(FetchContent)
-FetchContent_Declare(
-  JRL_CMAKE_MODULES
-  GIT_REPOSITORY https://github.com/jrl-umi3218/jrl-cmakemodules.git
-  GIT_TAG master
-  GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(JRL_CMAKE_MODULES)
-include("${jrl_cmake_modules_SOURCE_DIR}/v2/modules/jrl.cmake")
+include(../cmake/get-jrl-cmakemodules.cmake)
 
 jrl_configure_defaults()
 set(CMAKE_CXX_STANDARD 17)
 
 # ── Options ───────────────────────────────────────────────────────────────────
 jrl_option(BUILD_TESTING "Build tests" OFF)
+jrl_option(
+  USE_SETCAP "Use setcap to set real-time permissions on the binary" ON
+)
 
 # ── Dependencies ──────────────────────────────────────────────────────────────
 jrl_find_package(mc_rtc REQUIRED)
 jrl_find_package(Threads REQUIRED)
 jrl_find_package(fmt REQUIRED)
 
-find_program(SETCAP setcap)
-find_program(SUDO sudo)
-if(NOT SUDO)
-  message(FATAL_ERROR "sudo must be available on the system")
-else()
-  message(STATUS "sudo command: ${SUDO}")
+if(USE_SETCAP)
+  find_program(SETCAP setcap)
+  find_program(SUDO sudo)
+  if(NOT SUDO)
+    message(FATAL_ERROR "sudo must be available on the system")
+  else()
+    message(STATUS "sudo command: ${SUDO}")
+  endif()
 endif()
 
 # ── Build ─────────────────────────────────────────────────────────────────────
