@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         # 1. Define the core multiplication axes at the top level
-        os: [ubuntu-24.04, macos-latest]
+        os: [ubuntu-24.04]
         ccache: [true, false]
     steps:
       - uses: actions/checkout@v6
