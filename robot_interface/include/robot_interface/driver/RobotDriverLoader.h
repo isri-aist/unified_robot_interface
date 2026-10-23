@@ -75,7 +75,6 @@ private:
       mc_rtc::log::error("Cannot load the requested robot: {}\nIt is neither a valid alias nor a known exported robot",
                          name);
       mc_rtc::log::info("Available Interfaces:");
-      mtx.unlock();
       for(const auto & r : available_interfaces())
       {
         mc_rtc::log::info("- {}", r);
