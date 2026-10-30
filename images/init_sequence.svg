@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 680" width="1000" height="680" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1000" height="680" fill="#ffffff"/>
+
+  <!-- Participants -->
+  <rect x="50" y="15" width="160" height="44" rx="6" fill="#fff4e5" stroke="#c77a1f"/>
+  <text x="130" y="42" text-anchor="middle" font-weight="bold">mc_rtc controller</text>
+
+  <rect x="290" y="15" width="180" height="44" rx="6" fill="#f5f8ff" stroke="#2f5fb3"/>
+  <text x="380" y="34" text-anchor="middle" font-weight="bold">RobotManager</text>
+  <text x="380" y="50" text-anchor="middle" font-size="11">+ FMInterfaceTemplate</text>
+
+  <rect x="560" y="15" width="160" height="44" rx="6" fill="#eef8f1" stroke="#2e7d4f"/>
+  <text x="640" y="42" text-anchor="middle" font-weight="bold">RobotInterface</text>
+
+  <rect x="800" y="15" width="160" height="44" rx="6" fill="#f1f3f4" stroke="#5f6368"/>
+  <text x="880" y="42" text-anchor="middle" font-weight="bold">RobotDriver plugin</text>
+
+  <!-- Lifelines -->
+  <line x1="130" y1="59" x2="130" y2="665" stroke="#999" stroke-dasharray="4 4"/>
+  <line x1="380" y1="59" x2="380" y2="665" stroke="#999" stroke-dasharray="4 4"/>
+  <line x1="640" y1="59" x2="640" y2="665" stroke="#999" stroke-dasharray="4 4"/>
+  <line x1="880" y1="59" x2="880" y2="665" stroke="#999" stroke-dasharray="4 4"/>
+
+  <!-- Phase label: init -->
+  <text x="20" y="84" font-weight="bold" fill="#2f5fb3">Initialization</text>
+
+  <!-- 1: parse -->
+  <rect x="280" y="92" width="200" height="26" rx="4" fill="#fffbe6" stroke="#d4b106"/>
+  <text x="380" y="110" text-anchor="middle" font-size="12">parse mc_rtc.yaml, fill defaults</text>
+
+  <!-- 2: spawn -->
+  <line x1="380" y1="140" x2="636" y2="140" stroke="#333" stroke-dasharray="6 3" marker-end="url(#arrow)"/>
+  <text x="508" y="134" text-anchor="middle" font-size="12">posix_spawn (autostart only)</text>
+
+  <!-- 3: queryable -->
+  <rect x="535" y="156" width="210" height="26" rx="4" fill="#fffbe6" stroke="#d4b106"/>
+  <text x="640" y="174" text-anchor="middle" font-size="12">register queryable {name}/init</text>
+
+  <!-- 4: init query -->
+  <line x1="380" y1="210" x2="636" y2="210" stroke="#333" marker-end="url(#arrow)"/>
+  <text x="508" y="204" text-anchor="middle" font-size="12">query {name}/init: robot config as YAML</text>
+  <text x="508" y="225" text-anchor="middle" font-size="11" fill="#666">60 s timeout, up to 5 attempts</text>
+
+  <!-- 5: load driver -->
+  <line x1="640" y1="252" x2="876" y2="252" stroke="#333" marker-end="url(#arrow)"/>
+  <text x="760" y="246" text-anchor="middle" font-size="11">create(ip, port, config_path, grippers)</text>
+
+  <line x1="880" y1="282" x2="644" y2="282" stroke="#333" stroke-dasharray="6 3" marker-end="url(#arrow)"/>
+  <text x="760" y="276" text-anchor="middle" font-size="12">RobotDriver instance</text>
+
+  <!-- 6: reply -->
+  <line x1="640" y1="314" x2="384" y2="314" stroke="#333" stroke-dasharray="6 3" marker-end="url(#arrow)"/>
+  <text x="508" y="308" text-anchor="middle" font-size="12">reply "OK" or "ERROR: &lt;reason&gt;"</text>
+
+  <!-- 7: start controller -->
+  <line x1="380" y1="346" x2="134" y2="346" stroke="#333" marker-end="url(#arrow)"/>
+  <text x="255" y="340" text-anchor="middle" font-size="12">initializeRobots(), start()</text>
+
+  <!-- Loop frame -->
+  <rect x="20" y="370" width="960" height="290" rx="6" fill="none" stroke="#2e7d4f" stroke-width="1.5"/>
+  <rect x="20" y="370" width="250" height="24" rx="6" fill="#2e7d4f"/>
+  <text x="32" y="387" fill="#ffffff" font-weight="bold" font-size="12">loop: every robot controller.time_step</text>
+
+  <!-- 8: sync -->
+  <line x1="640" y1="418" x2="876" y2="418" stroke="#333" marker-end="url(#arrow)"/>
+  <text x="760" y="412" text-anchor="middle" font-size="11">sync(), then read joints and sensors</text>
+
+  <!-- 9: state -->
+  <line x1="640" y1="452" x2="384" y2="452" stroke="#2e7d4f" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="508" y="446" text-anchor="middle" font-size="12">publish {name}/state</text>
+
+  <!-- 10: feed mc_rtc -->
+  <line x1="380" y1="486" x2="134" y2="486" stroke="#333" marker-end="url(#arrow)"/>
+  <text x="255" y="480" text-anchor="middle" font-size="12">setEncoderValues, sensors</text>
+  <text x="255" y="501" text-anchor="middle" font-size="11" fill="#666">first state: initializeRobot()</text>
+
+  <!-- 11: run -->
+  <rect x="40" y="516" width="180" height="26" rx="4" fill="#fffbe6" stroke="#d4b106"/>
+  <text x="130" y="534" text-anchor="middle" font-size="12">run() every step_size ticks</text>
+
+  <!-- 12: command -->
+  <line x1="130" y1="572" x2="376" y2="572" stroke="#333" stroke-dasharray="6 3" marker-end="url(#arrow)"/>
+  <text x="255" y="566" text-anchor="middle" font-size="12">command(name, mode)</text>
+
+  <!-- 13: publish command -->
+  <line x1="380" y1="606" x2="636" y2="606" stroke="#2f5fb3" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="508" y="600" text-anchor="middle" font-size="12">publish {name}/command</text>
+
+  <!-- 14: apply -->
+  <line x1="640" y1="640" x2="876" y2="640" stroke="#333" marker-end="url(#arrow)"/>
+  <text x="760" y="634" text-anchor="middle" font-size="12">servoJ / speedJ / tauJ</text>
+</svg>
