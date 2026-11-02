@@ -4,7 +4,10 @@
 #include <robot_comm/serialization/MessageTraits.h>
 
 #include <mc_rtc/logging.h>
+#include <cstdlib>
+#include <fmt/ranges.h>
 #include <robot_interface/config.h>
+#include <robot_interface/driver/DriverSearchPaths.h>
 #include <robot_interface/driver/GripperInfo.h>
 
 #include <chrono>
@@ -15,7 +18,7 @@ namespace robot_interface
 
 RobotInterface::RobotInterface(const std::string & name, const mc_rtc::Configuration & comm_config)
 : name_(name), comm_config_(comm_config), driver_loader_("ROBOT_DRIVER_PLUGIN",
-                                                         {robot_interface::ROBOT_INTERFACE_INSTALL_PREFIX},
+                                                         driverSearchPaths(),
                                                          true,
                                                          PluginAbi{ROBOT_DRIVER_ABI_SYMBOL, ROBOT_DRIVER_ABI_VERSION})
 {
@@ -177,6 +180,12 @@ void RobotInterface::loadDriver(const std::string & driver_name,
 
   mc_rtc::log::info("[RobotInterface] '{}' loading driver '{}' ({}:{}), config_path: '{}', {} gripper(s)", name_,
                     driver_name, ip, port, config_path, grippers.size());
+
+  if(std::getenv(DRIVER_PATH_ENV))
+  {
+    mc_rtc::log::info("[RobotInterface] '{}' {} is set, driver search paths: {}", name_, DRIVER_PATH_ENV,
+                      fmt::join(driverSearchPaths(), ":"));
+  }
 
   driver_ = driver_loader_.load(driver_name, ip, port, config_path, grippers);
 

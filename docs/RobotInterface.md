@@ -160,15 +160,44 @@ the robot. The fix is always to rebuild and reinstall the driver.
 
 ### Plugin lookup
 
-Drivers are searched **only** in `<CMAKE_INSTALL_PREFIX>/lib/robot_interface`,
-using the prefix `robot_interface` was built with (`ROBOT_INTERFACE_INSTALL_PREFIX`
-in the generated `robot_interface/config.h`). No environment variable adds
-extra paths. A driver installed elsewhere is not found. When a driver is
-missing, the loader logs the searched path and the drivers it did find:
+`uri interface` and `uri viewer` search these directories, in this order:
+
+1. The directories listed in the `URI_DRIVER_PATH` environment variable
+   (colon-separated, like `PATH`; empty entries are ignored).
+2. `<CMAKE_INSTALL_PREFIX>/lib/robot_interface`, using the prefix
+   `robot_interface` was built with (`ROBOT_INTERFACE_INSTALL_PREFIX` in the
+   generated `robot_interface/config.h`).
+
+Duplicate directories are dropped. If two directories contain a driver with the
+same class name, the first one will be selected. Without `URI_DRIVER_PATH`, only the
+install prefix is searched. Paths are used as given (no `~` expansion), and
+missing directories are skipped.
+
+This lets you run a driver that is not installed in URI's prefix, for example
+one built in its own build tree, under Nix, or mounted into a container:
+
+```bash
+URI_DRIVER_PATH=/home/me/franka_driver/build:/opt/drivers uri interface -c etc/robot_interface.yaml
+```
+
+When the variable is set, `uri interface` and `uri viewer` log the search
+paths at info level. An interface started by the manager (`autostart: true`)
+inherits the manager's environment, so set the variable before `uri manager`.
+The variable is local to the machine that loads the driver: it is never sent
+from the manager to a remote interface.
+
+`uri` carries the `cap_sys_nice` capability, and `URI_DRIVER_PATH` is honoured
+regardless. **Whoever controls the variable or the listed directories controls the
+code that runs with that capability.** Only list directories that unprivileged
+users cannot write to.
+
+When a driver is missing, the loader logs the searched paths and the drivers it
+did find:
 
 ```text
 [PluginLoader] Plugin 'RobotDriverFoo' not found
 [PluginLoader] Searched paths:
+  - /home/me/franka_driver/build
   - /opt/uri/lib/robot_interface
 [PluginLoader] Available plugins:
   - RobotDriverRTDE
