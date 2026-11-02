@@ -38,7 +38,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push devcontainer image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: .devcontainer/Dockerfile
@@ -53,7 +53,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Build and push uri image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: .devcontainer/Dockerfile
