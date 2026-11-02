@@ -40,7 +40,7 @@ jobs:
 
       - name: Cache FlatBuffers and Zenoh
         id: deps-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ env.DEPS_PREFIX }}
           key: deps-noble-flatbuffers-${{ env.FLATBUFFERS_VERSION }}-zenoh-${{ env.ZENOH_VERSION }}
@@ -71,7 +71,7 @@ jobs:
           cmake --build build
 
       - name: Cache hdoc
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/hdoc-build
           key: hdoc-noble-${{ hashFiles('scripts/gen-hdoc-docs.sh') }}
