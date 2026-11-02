@@ -51,8 +51,10 @@ sends empty lists.
 ## Using a driver
 
 Every driver is built and installed the same way. Use the **same install
-prefix as URI**, because `uri interface` only looks for plugins in
-`<prefix>/lib/robot_interface`:
+prefix as URI**, because `uri interface` looks for plugins in
+`<prefix>/lib/robot_interface`. To keep a driver elsewhere, list its directory in
+the `URI_DRIVER_PATH` environment variable (see
+[Robot interface](docRobotInterface.html#plugin-lookup)):
 
 ```bash
 cmake -S . -B build \

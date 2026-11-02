@@ -366,7 +366,9 @@ cmake --build .
 cmake --install .
 ```
 
-The plugin is installed to `lib/robot_interface/lib__CLASS__.so`.
+The plugin is installed to `lib/robot_interface/lib__CLASS__.so`. To use it
+without installing it into URI's prefix, set `URI_DRIVER_PATH` to the directory
+containing the `.so` (e.g. `build/`) when running `uri interface` or `uri viewer`.
 
 ## Implementing the driver
 
