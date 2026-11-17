@@ -175,8 +175,21 @@ int main(int argc, char * argv[])
   /* Set scheduler policy for the main thread */
   if(schedSetattr(0, &attr, 0) < 0)
   {
-    fmt::print("[error] schedSetattr failed\n");
-    // return -2;
+    // Keep running (e.g. under gdb, which drops file capabilities), but make
+    // the loss of real-time scheduling obvious.
+    const int err = errno;
+    fmt::print(stderr, "[error] SCHED_DEADLINE setup failed: {}. Running WITHOUT real-time scheduling.\n",
+               std::strerror(err));
+    if(err == EPERM)
+    {
+      fmt::print(stderr, "        uri needs the cap_sys_nice capability: sudo setcap cap_sys_nice+eip $(which uri)\n"
+                         "        (check with: getcap $(which uri); in Docker also pass --cap-add=sys_nice)\n");
+    }
+    else if(err == EBUSY)
+    {
+      fmt::print(stderr, "        Not enough SCHED_DEADLINE bandwidth for a {}ms runtime per period.\n",
+                 double(cycle_ns) / 1e6);
+    }
   }
 
   /* Run */
