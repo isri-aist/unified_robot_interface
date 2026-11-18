@@ -160,8 +160,9 @@ argument is null`.
 
 ## 3. Build and install
 
-Use the **same install prefix as URI**. `uri interface` only looks in the
-`lib/robot_interface` directory under the prefix it was built with:
+Use the **same install prefix as URI**. `uri interface` looks in the
+`lib/robot_interface` directory under the prefix it was built with (and in the
+directories of `URI_DRIVER_PATH`, see below):
 
 ```bash
 cd franka_driver
@@ -200,9 +201,17 @@ simulation, and check that joint order, signs and units are right before
 connecting mc_rtc. The viewer never sends commands.
 
 If you get `Plugin 'RobotDriverFranka' not found`, the log lists the searched
-directory. Your install prefix doesn't match URI's. If you get `built against
+directories. Either your install prefix doesn't match URI's, or the driver's
+directory is not in `URI_DRIVER_PATH`. If you get `built against
 an incompatible interface`, rebuild and reinstall the driver against the
 current URI headers.
+
+To test a driver without installing it into URI's prefix, put its directory
+in `URI_DRIVER_PATH` (colon-separated, searched before the prefix):
+
+```bash
+URI_DRIVER_PATH=$PWD/build uri viewer -c etc/robot_interface.yaml
+```
 
 Below the joint table, the viewer also shows how long `sync()` blocks and the
 cycle period, so you can check that the driver runs at the robot's rate.

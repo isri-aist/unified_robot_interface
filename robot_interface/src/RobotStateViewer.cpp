@@ -1,8 +1,11 @@
 #include <robot_interface/RobotStateViewer.h>
 
+#include <cstdlib>
+#include <fmt/ranges.h>
 #include <robot_interface/PluginLoader.h>
 #include <robot_interface/RobotDriverTemplate.h>
 #include <robot_interface/config.h>
+#include <robot_interface/driver/DriverSearchPaths.h>
 #include <robot_interface/driver/GripperInfo.h>
 
 #include <mc_rtc/Configuration.h>
@@ -151,8 +154,14 @@ int runRobotStateViewer(const std::string & config_path,
 
   mc_rtc::log::info("[robot_state_viewer] Loading driver '{}' ({}:{})", driver_name, ip, port);
 
+  if(std::getenv(robot_interface::DRIVER_PATH_ENV))
+  {
+    mc_rtc::log::info("[robot_state_viewer] {} is set, driver search paths: {}", robot_interface::DRIVER_PATH_ENV,
+                      fmt::join(robot_interface::driverSearchPaths(), ":"));
+  }
+
   robot_interface::PluginLoader<robot_interface::RobotDriver> loader(
-      "ROBOT_DRIVER_PLUGIN", {robot_interface::ROBOT_INTERFACE_INSTALL_PREFIX}, false,
+      "ROBOT_DRIVER_PLUGIN", robot_interface::driverSearchPaths(), false,
       robot_interface::PluginAbi{ROBOT_DRIVER_ABI_SYMBOL, ROBOT_DRIVER_ABI_VERSION});
   std::shared_ptr<robot_interface::RobotDriver> driver;
 

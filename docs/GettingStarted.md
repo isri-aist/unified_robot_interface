@@ -84,10 +84,11 @@ Whichever way you install, you also need the RobotModule of each robot you
 want to control (e.g. `mc_ur5e`), and a driver plugin for it (see
 [Supported robots](docSupportedRobots.html)).
 
-The install prefix matters. `uri interface` looks for driver plugins **only**
-in `<CMAKE_INSTALL_PREFIX>/lib/robot_interface`. That path is compiled in and
-has no environment-variable override. Drivers must be installed with the same
-prefix. See [Robot interface](docRobotInterface.html).
+The install prefix matters. `uri interface` looks for driver plugins
+in `<CMAKE_INSTALL_PREFIX>/lib/robot_interface` (compiled in), unless the
+`URI_DRIVER_PATH` environment variable lists other directories.
+Otherwise install drivers with the same prefix. See
+[Robot interface](docRobotInterface.html#plugin-lookup).
 
 The build and the install both run `setcap cap_sys_nice+eip` on `uri` through
 `sudo`, so you may be prompted for your password. `uri` needs this capability

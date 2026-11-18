@@ -18,3 +18,17 @@ endfunction()
 
 add_ri_test(test_init_handshake test_init_handshake.cpp)
 add_ri_test(test_pubsub_loop test_pubsub_loop.cpp)
+
+# Tiny driver plugin living in the build tree, outside any install prefix.
+add_library(search_path_test_driver MODULE test_driver.cpp)
+target_link_libraries(search_path_test_driver PRIVATE robot_driver_api)
+
+add_ri_test(test_driver_search_paths test_driver_search_paths.cpp)
+target_link_libraries(
+  test_driver_search_paths PRIVATE robot_interface_lib mc_rtc::mc_rtc_loader
+)
+target_compile_definitions(
+  test_driver_search_paths
+  PRIVATE TEST_DRIVER_DIR="$<TARGET_FILE_DIR:search_path_test_driver>"
+)
+add_dependencies(test_driver_search_paths search_path_test_driver)

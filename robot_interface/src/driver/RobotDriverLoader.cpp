@@ -2,7 +2,9 @@
 #include <mutex>
 #include <robot_interface/driver/RobotDriverLoader.h>
 
-#include <robot_interface/config.h>
+#include <robot_interface/driver/DriverSearchPaths.h>
+
+#include <cstdlib>
 
 namespace robot_interface
 {
@@ -17,10 +19,18 @@ void RobotDriverLoader::init(bool skip_default_path)
   {
     try
     {
-      std::vector<std::string> default_path = {};
-      if(!skip_default_path)
+      // With skip_default_path, only the user-supplied URI_DRIVER_PATH is searched.
+      std::vector<std::string> default_path;
+      if(skip_default_path)
       {
-        default_path.push_back(ROBOT_INTERFACE_INSTALL_PREFIX);
+        if(const char * env = std::getenv(DRIVER_PATH_ENV))
+        {
+          default_path = splitSearchPath(env);
+        }
+      }
+      else
+      {
+        default_path = driverSearchPaths();
       }
       robot_driver_loader_.reset(new mc_rtc::ObjectLoader<RobotDriver>("ROBOT_DRIVER_PLUGIN", default_path, verbose_));
       // TODO consider aliases if needed

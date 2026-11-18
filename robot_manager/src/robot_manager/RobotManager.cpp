@@ -98,6 +98,7 @@ bool RobotManager::autostartEnabled(const mc_rtc::Configuration & robot_config)
 
 pid_t RobotManager::spawnRobotInterface(const std::string & robot_name, const mc_rtc::Configuration & robot_config)
 {
+  // posix_spawn below passes the parent environment, so the interface inherits URI_DRIVER_PATH.
   mc_rtc::Configuration iface_config;
   iface_config.add("name", robot_name);
   iface_config.add("network_interface", robot_config("network_interface"));
