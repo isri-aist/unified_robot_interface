@@ -18,3 +18,9 @@ endfunction()
 
 add_ri_test(test_init_handshake test_init_handshake.cpp)
 add_ri_test(test_pubsub_loop test_pubsub_loop.cpp)
+add_ri_test(test_link_loss test_link_loss.cpp)
+# RobotInterface.h instantiates mc_rtc's loader, which robot_interface_lib does not
+# propagate.
+target_link_libraries(
+  test_link_loss PRIVATE robot_interface_lib mc_rtc::mc_rtc_loader
+)
