@@ -9,23 +9,40 @@
 
 #include <chrono>
 #include <sys/prctl.h>
+#include <utility>
 
 namespace robot_interface
 {
 
-RobotInterface::RobotInterface(const std::string & name, const mc_rtc::Configuration & comm_config)
+namespace
+{
+// Exit code of `uri interface` after a torque-mode robot lost its manager
+constexpr int link_lost_exit_code = 2;
+} // namespace
+
+RobotInterface::RobotInterface(const std::string & name,
+                               const mc_rtc::Configuration & comm_config,
+                               DriverFactory driver_factory)
 : name_(name), comm_config_(comm_config), driver_loader_("ROBOT_DRIVER_PLUGIN",
                                                          {robot_interface::ROBOT_INTERFACE_INSTALL_PREFIX},
                                                          true,
-                                                         PluginAbi{ROBOT_DRIVER_ABI_SYMBOL, ROBOT_DRIVER_ABI_VERSION})
+                                                         PluginAbi{ROBOT_DRIVER_ABI_SYMBOL, ROBOT_DRIVER_ABI_VERSION}),
+  driver_factory_(std::move(driver_factory))
 {
+  if(!driver_factory_)
+  {
+    driver_factory_ = [this](const std::string & driver_name, const std::string & ip, uint16_t port,
+                             const std::string & config_path, const std::vector<GripperInfo> & grippers)
+    { return driver_loader_.load(driver_name, ip, port, config_path, grippers); };
+  }
+
   comm_ = robot_comm::CommunicationFactory::makeCommunication(name_, comm_config_);
   comm_->setupClient();
   latency_stats_ = comm_config_("latency_stats", false);
   connection_timeout_ = std::chrono::milliseconds(comm_config_("connection_timeout_ms", 100));
 }
 
-void RobotInterface::run(const std::atomic<bool> & interrupt)
+bool RobotInterface::run(const std::atomic<bool> & interrupt)
 {
   // Register queryable so RobotManager can bootstrap us.
   const std::string init_topic = name_ + "/init";
@@ -46,26 +63,37 @@ void RobotInterface::run(const std::atomic<bool> & interrupt)
   if(interrupt.load())
   {
     mc_rtc::log::warning("[RobotInterface] '{}' interrupted before init", name_);
-    return;
+    return true;
   }
 
   if(!init_error_.empty())
   {
     mc_rtc::log::error("[RobotInterface] '{}' init failed: {}", name_, init_error_);
-    return;
+    return true;
   }
 
   mc_rtc::log::success("[RobotInterface] '{}' initialized, starting control loop", name_);
 
-  // Prime the last command with the robot's current position so the driver's
-  // reverse interface gets servoJ right away and the URScript doesn't time out
-  // while waiting for the first command from the manager.
+  // However the loop ends, exceptions included: never leave a torque-controlled
+  // robot running.
+  struct DriverGuard
+  {
+    RobotInterface & interface;
+    ~DriverGuard()
+    {
+      interface.shutdownDriver();
+    }
+  } driver_guard{*this};
+
+  // Prime the last command so the driver gets a valid one from the first cycle,
+  // however long the manager takes to send its own. Nothing is sent in torque
+  // mode, see makeHoldCommand().
   driver_->sync();
 
   last_cmd_ = makeHoldCommand();
 
   // Control loop: run at driver's natural rate (spin freely, driver sync() paces us).
-  while(!interrupt.load())
+  while(!interrupt.load() && !stop_requested_)
   {
     driver_->sync();
     // Shutdown may have been requested while sync() was blocking.
@@ -79,6 +107,31 @@ void RobotInterface::run(const std::atomic<bool> & interrupt)
   }
 
   mc_rtc::log::info("[RobotInterface] '{}' control loop stopped", name_);
+  return !stop_requested_;
+}
+
+void RobotInterface::shutdownDriver() noexcept
+{
+  if(!driver_) return;
+
+  if(control_mode_ == "torque")
+  {
+    mc_rtc::log::info("[RobotInterface] '{}' stopping the robot", name_);
+    try
+    {
+      driver_->stop();
+    }
+    catch(const std::exception & e)
+    {
+      mc_rtc::log::error("[RobotInterface] '{}' driver failed to stop the robot: {}", name_, e.what());
+    }
+    catch(...)
+    {
+      mc_rtc::log::error("[RobotInterface] '{}' driver failed to stop the robot", name_);
+    }
+  }
+
+  driver_.reset();
 }
 
 robot_comm::ByteBuffer RobotInterface::handleInitQuery(const robot_comm::ByteBuffer & payload)
@@ -178,7 +231,7 @@ void RobotInterface::loadDriver(const std::string & driver_name,
   mc_rtc::log::info("[RobotInterface] '{}' loading driver '{}' ({}:{}), config_path: '{}', {} gripper(s)", name_,
                     driver_name, ip, port, config_path, grippers.size());
 
-  driver_ = driver_loader_.load(driver_name, ip, port, config_path, grippers);
+  driver_ = driver_factory_(driver_name, ip, port, config_path, grippers);
 
   mc_rtc::log::success("[RobotInterface] '{}' driver '{}' loaded", name_, driver_name);
 }
@@ -243,6 +296,13 @@ void RobotInterface::updateControl()
   {
     if(const auto reason = linkLossReason(); !reason.empty())
     {
+      if(control_mode_ == "torque")
+      {
+        mc_rtc::log::error("[RobotInterface] '{}' lost the manager ({}), stopping the robot", name_, reason);
+        last_cmd_.reset();
+        stop_requested_ = true;
+        return;
+      }
       mc_rtc::log::error("[RobotInterface] '{}' lost the manager ({}), holding the robot", name_, reason);
       link_lost_ = true;
       last_cmd_ = makeHoldCommand();
@@ -275,7 +335,7 @@ std::optional<robot_comm::Command> RobotInterface::makeHoldCommand()
   }
   else if(control_mode_ == "torque")
   {
-    hold.torque.assign(q.size(), 0.0);
+    return std::nullopt;
   }
   else
   {
@@ -351,7 +411,11 @@ int runRobotInterface(const std::string & config_path, std::string name, const s
   mc_rtc::log::info("[robot_interface] Starting '{}' from config '{}'", name, config_path);
 
   RobotInterface iface(name, comm_config);
-  iface.run(interrupt);
+  if(!iface.run(interrupt))
+  {
+    mc_rtc::log::error("[robot_interface] '{}' exited after losing the manager", name);
+    return link_lost_exit_code;
+  }
 
   mc_rtc::log::info("[robot_interface] '{}' exited cleanly", name);
   return 0;

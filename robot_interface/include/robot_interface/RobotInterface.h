@@ -3,10 +3,12 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include <mc_rtc/Configuration.h>
 
@@ -14,6 +16,7 @@
 #include <robot_comm/serialization/MessageTraits.h>
 #include <robot_interface/PluginLoader.h>
 #include <robot_interface/RobotDriverTemplate.h>
+#include <robot_interface/driver/GripperInfo.h>
 
 namespace robot_interface
 {
@@ -28,15 +31,27 @@ namespace robot_interface
 ///   5. Replies "OK" or "ERROR: <reason>" to the init query.
 ///   6. Runs the control loop: publishes the driver state on "{name}/state"
 ///      and applies the latest command from "{name}/command".
+///   7. Destroys the driver once the loop ends, after its stop() in torque mode.
 class RobotInterface
 {
 public:
+  /// Creates a driver from its class name and the arguments of a plugin's create().
+  using DriverFactory = std::function<std::shared_ptr<RobotDriver>(const std::string & driver_name,
+                                                                   const std::string & ip,
+                                                                   uint16_t port,
+                                                                   const std::string & config_path,
+                                                                   const std::vector<GripperInfo> & grippers)>;
+
   /// \param name Robot name, used as the prefix of its topics.
   /// \param comm_config The `network_interface` configuration.
-  RobotInterface(const std::string & name, const mc_rtc::Configuration & comm_config);
+  /// \param driver_factory Creates the driver; defaults to loading its plugin.
+  RobotInterface(const std::string & name,
+                 const mc_rtc::Configuration & comm_config,
+                 DriverFactory driver_factory = {});
 
-  /// Handle the init handshake, then run the control loop until interrupt is set.
-  void run(const std::atomic<bool> & interrupt);
+  /// Handle the init handshake, then run the control loop until interrupt is set
+  /// or, in torque mode, the manager is lost. Returns false in the latter case.
+  bool run(const std::atomic<bool> & interrupt);
 
   /// Robot name.
   const std::string & name() const
@@ -56,9 +71,13 @@ private:
   void updateSensors();
   void updateControl();
 
-  // Command that keeps the robot still in control_mode_: current position, or
-  // zero velocity/torque. nullopt if the driver reports no joints yet.
+  // Command that keeps the robot still in control_mode_: current position or
+  // zero velocity. nullopt if the driver reports no position yet, and in torque
+  // mode: zero torque does not hold a robot.
   std::optional<robot_comm::Command> makeHoldCommand();
+
+  // Stop the robot (torque mode) and destroy the driver.
+  void shutdownDriver() noexcept;
 
   // Why the link to the manager counts as lost, or empty while it is fine.
   std::string linkLossReason();
@@ -68,6 +87,7 @@ private:
   std::unique_ptr<robot_comm::Communication> comm_;
 
   PluginLoader<RobotDriver> driver_loader_;
+  DriverFactory driver_factory_;
   std::shared_ptr<RobotDriver> driver_;
 
   // Last received command — re-applied every RTDE cycle to give the robot a
@@ -77,9 +97,10 @@ private:
 
   // Connection watchdog (network_interface.connection_timeout_ms): when the
   // manager goes away, last_cmd_ is replaced by a hold command until new
-  // commands arrive.
+  // commands arrive. In torque mode, the control loop ends instead.
   std::chrono::milliseconds connection_timeout_;
   bool link_lost_ = false;
+  bool stop_requested_ = false;
 
   // Signalled when the init query has been handled and driver is ready.
   std::mutex init_mutex_;
@@ -104,7 +125,8 @@ private:
 
 /// Entry point of `uri interface`: loads the config file at config_path, then
 /// runs a RobotInterface until interrupt is set. A non-empty name overrides the
-/// config's 'name'. Returns the process exit code.
+/// config's 'name'. Returns the process exit code: 0, or 2 if a torque-mode
+/// robot was stopped because the manager was lost.
 int runRobotInterface(const std::string & config_path, std::string name, const std::atomic<bool> & interrupt);
 
 } // namespace robot_interface
