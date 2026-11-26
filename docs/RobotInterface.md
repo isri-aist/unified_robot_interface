@@ -28,16 +28,17 @@ It shows up as `uri:<name>` in `ps`/`top` (truncated to 15 characters).
 | `-c, --config` | YAML file, **required** |
 | `-n, --name` | Robot name; overrides `name:` in the file. Must match the key under `Robots:` in the manager's `mc_rtc.yaml`. |
 
-The config file only needs what it takes to reach the manager, plus where to
-find drivers on this machine. Everything else, including the driver, IP, port
-and control mode, arrives in the init query:
+The config file only needs what it takes to reach the manager. Everything
+else, including the driver, IP, port and control mode, arrives in the init
+query:
 
 ```yaml
 name: ur5e
 network_interface:
   protocol: zenoh
   # configuration: /path/to/zenoh.json5   # if multicast discovery is unavailable
-# Optional: extra directories to search for driver plugins, see "Plugin lookup".
+# Optional, only for drivers outside URI's install prefix; setting URI_DRIVER_PATH
+# also works. See "Plugin lookup".
 # driver_paths: [/opt/drivers, /home/me/franka_driver/build]
 ```
 
