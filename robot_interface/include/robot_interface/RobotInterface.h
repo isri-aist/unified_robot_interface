@@ -7,6 +7,7 @@
 #include <mutex>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include <mc_rtc/Configuration.h>
 
@@ -33,7 +34,11 @@ class RobotInterface
 public:
   /// \param name Robot name, used as the prefix of its topics.
   /// \param comm_config The `network_interface` configuration.
-  RobotInterface(const std::string & name, const mc_rtc::Configuration & comm_config);
+  /// \param driver_paths Extra directories searched for the driver plugin,
+  /// before URI_DRIVER_PATH and the install prefix (see driverSearchPaths).
+  RobotInterface(const std::string & name,
+                 const mc_rtc::Configuration & comm_config,
+                 const std::vector<std::string> & driver_paths = {});
 
   /// Handle the init handshake, then run the control loop until interrupt is set.
   void run(const std::atomic<bool> & interrupt);
@@ -67,6 +72,9 @@ private:
   mc_rtc::Configuration comm_config_;
   std::unique_ptr<robot_comm::Communication> comm_;
 
+  // Local to this machine, never received from the manager (ADR 0002).
+  bool has_extra_driver_paths_;
+  std::vector<std::string> driver_search_paths_;
   PluginLoader<RobotDriver> driver_loader_;
   std::shared_ptr<RobotDriver> driver_;
 
@@ -104,7 +112,8 @@ private:
 
 /// Entry point of `uri interface`: loads the config file at config_path, then
 /// runs a RobotInterface until interrupt is set. A non-empty name overrides the
-/// config's 'name'. Returns the process exit code.
+/// config's 'name'. The config's optional 'driver_paths' list is searched for
+/// the driver before URI_DRIVER_PATH. Returns the process exit code.
 int runRobotInterface(const std::string & config_path, std::string name, const std::atomic<bool> & interrupt);
 
 } // namespace robot_interface

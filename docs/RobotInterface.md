@@ -28,15 +28,17 @@ It shows up as `uri:<name>` in `ps`/`top` (truncated to 15 characters).
 | `-c, --config` | YAML file, **required** |
 | `-n, --name` | Robot name; overrides `name:` in the file. Must match the key under `Robots:` in the manager's `mc_rtc.yaml`. |
 
-The config file only needs what it takes to reach the manager. Everything
-else, including the driver, IP, port and control mode, arrives in the init
-query:
+The config file only needs what it takes to reach the manager, plus where to
+find drivers on this machine. Everything else, including the driver, IP, port
+and control mode, arrives in the init query:
 
 ```yaml
 name: ur5e
 network_interface:
   protocol: zenoh
   # configuration: /path/to/zenoh.json5   # if multicast discovery is unavailable
+# Optional: extra directories to search for driver plugins, see "Plugin lookup".
+# driver_paths: [/opt/drivers, /home/me/franka_driver/build]
 ```
 
 ## Lifecycle
@@ -162,34 +164,45 @@ the robot. The fix is always to rebuild and reinstall the driver.
 
 `uri interface` and `uri viewer` search these directories, in this order:
 
-1. The directories listed in the `URI_DRIVER_PATH` environment variable
+1. The `driver_paths` list of the `-c` config file. For `uri viewer -c
+   mc_rtc.yaml`, the top-level `DriverPaths` list of that file instead (see
+   [Robot manager](docRobotManager.html)).
+2. The directories listed in the `URI_DRIVER_PATH` environment variable
    (colon-separated, like `PATH`; empty entries are ignored).
-2. `<CMAKE_INSTALL_PREFIX>/lib/robot_interface`, using the prefix
+3. `<CMAKE_INSTALL_PREFIX>/lib/robot_interface`, using the prefix
    `robot_interface` was built with (`ROBOT_INTERFACE_INSTALL_PREFIX` in the
    generated `robot_interface/config.h`).
 
-Duplicate directories are dropped. If two directories contain a driver with the
-same class name, the first one will be selected. Without `URI_DRIVER_PATH`, only the
-install prefix is searched. Paths are used as given (no `~` expansion), and
-missing directories are skipped.
+Duplicate directories are dropped. If more than one directory contains a driver with the
+same class name, the first one will be selected. Paths are used as given (no `~` expansion),
+and missing directories are skipped. `driver_paths` and `DriverPaths` must be lists of
+strings; an empty key (all entries commented out) counts as an empty list.
 
 This lets you run a driver that is not installed in URI's prefix, for example
 one built in its own build tree, under Nix, or mounted into a container:
 
+```yaml
+# etc/robot_interface.yaml
+driver_paths: [/home/me/franka_driver/build, /opt/drivers]
+```
+
 ```bash
+# or
 URI_DRIVER_PATH=/home/me/franka_driver/build:/opt/drivers uri interface -c etc/robot_interface.yaml
 ```
 
-When the variable is set, `uri interface` and `uri viewer` log the search
+When any of these is set, `uri interface` and `uri viewer` log the search
 paths at info level. An interface started by the manager (`autostart: true`)
-inherits the manager's environment, so set the variable before `uri manager`.
-The variable is local to the machine that loads the driver: it is never sent
-from the manager to a remote interface.
+inherits the manager's environment, so set the variable before `uri manager`,
+and gets the manager's top-level `DriverPaths` as its `driver_paths`.
+Driver paths are local to the machine that loads the driver: they are never
+sent from the manager to a remote interface in the init query. A remote
+interface uses its own config file and environment.
 
-`uri` carries the `cap_sys_nice` capability, and `URI_DRIVER_PATH` is honoured
-regardless. **Whoever controls the variable or the listed directories controls the
-code that runs with that capability.** Only list directories that unprivileged
-users cannot write to.
+`uri` carries the `cap_sys_nice` capability, and user-supplied driver paths
+(config files, `URI_DRIVER_PATH`) are honoured regardless. **Whoever
+controls these paths or the listed directories controls the code that runs with
+that capability.** Only list directories that unprivileged users cannot write to.
 
 When a driver is missing, the loader logs the searched paths and the drivers it
 did find:

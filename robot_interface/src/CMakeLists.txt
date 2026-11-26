@@ -46,7 +46,10 @@ target_include_directories(
 # -----------------------------------------------------------------------
 find_package(robot_comm QUIET)
 
-add_library(robot_interface_lib SHARED RobotInterface.cpp RobotStateViewer.cpp)
+add_library(
+  robot_interface_lib SHARED DriverPathsConfig.cpp RobotInterface.cpp
+                             RobotStateViewer.cpp
+)
 target_link_libraries(
   robot_interface_lib PUBLIC robot_driver_loader mc_rtc::mc_rtc_utils
 )

@@ -1,5 +1,7 @@
 #include <robot_manager/RobotManager.h>
 
+#include <robot_interface/DriverPathsConfig.h>
+
 #include <mc_rbdyn/RobotLoader.h>
 
 #include <fmt/core.h>
@@ -104,6 +106,10 @@ pid_t RobotManager::spawnRobotInterface(const std::string & robot_name, const mc
   iface_config.add("network_interface", robot_config("network_interface"));
   iface_config.add("robot_interface", robot_config("robot_interface"));
   iface_config.add("controller", robot_config("controller"));
+  if(!driver_paths_.empty())
+  {
+    iface_config.add("driver_paths", driver_paths_);
+  }
 
   const auto config_path = std::filesystem::temp_directory_path() / ("robot_manager_" + robot_name + "_interface.yaml");
   iface_config.save(config_path.string());
@@ -445,6 +451,8 @@ void RobotManager::launchZenohRouter()
   std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
 
+// TODO: move all configuration processing (defaults, validation, DriverPaths)
+// out of RobotManager into its own component; Removing dependency on mc_rtc
 void RobotManager::processGConfig(mc_control::MCGlobalController::GlobalConfiguration & gconfig)
 {
   if(!gconfig.config.has("Robots"))
@@ -454,6 +462,8 @@ void RobotManager::processGConfig(mc_control::MCGlobalController::GlobalConfigur
   }
 
   fmt::print("manager processGConfig 1\n");
+
+  driver_paths_ = robot_interface::driverPathsFromConfig(gconfig.config, "DriverPaths", "mc_rtc configuration");
 
   mc_rtc::Configuration robots_config = gconfig.config("Robots");
   for(auto & robot_name : robots_config.keys())

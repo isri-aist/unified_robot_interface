@@ -39,6 +39,7 @@ Timestep: 0.005              # mc_rtc period, shared by all robots
 Controller: mc_rtc           # [optional] controller backend, default mc_rtc
 ZenohRouter:                 # [optional] router started when a robot uses Zenoh
   configuration: /path/to/router.json5   # default: the zenoh_router.json5 installed with uri
+DriverPaths: [/opt/drivers]  # [optional] driver directories for autostarted interfaces
 
 Robots:
   ur5e:                                  # robot name = topic prefix
@@ -81,6 +82,7 @@ Robots:
 |---|---|---|---|
 | `Controller` | no | `mc_rtc` | Controller backend |
 | `ZenohRouter.configuration` | no | `<prefix>/share/unified_robot_interface/zenoh_router.json5` | Zenoh config file of the router that `uri manager` starts when a robot uses Zenoh. The default file, from `robot_manager/etc/`, listens on `tcp/127.0.0.1:9562` |
+| `DriverPaths` | no | none | List of extra directories to search for driver plugins. Only interfaces started with `autostart: true` get it, as `driver_paths` in their config file. It is never sent in the init query, so remote interfaces use their own settings. See [Plugin lookup](docRobotInterface.html#plugin-lookup). Must be a list of strings. |
 
 ### Timing rules
 
@@ -104,7 +106,7 @@ runs, the last command is sent again.
 ![Init handshake and control loop](images/init_sequence.svg)
 
 1. **Config processing** (`processGConfig`) fills in the few defaults, resolves
-   `base:`, validates required keys and picks the protocol.
+   `base:`, validates required keys and `DriverPaths`, and picks the protocol.
 2. **Controller**: `ControllerLoader` loads the backend named by `Controller:`
    from `<libdir>/robot_controller/librobot_controller_<backend>.so`.
 3. **Per robot** (`init`):
@@ -113,6 +115,7 @@ runs, the last command is sent again.
    - Read the grippers from the RobotModule and add them to the robot's
      config as `grippers: {name: [joints]}`.
    - With `autostart: true`, write `/tmp/robot_manager_<name>_interface.yaml`
+     (including the top-level `DriverPaths` as `driver_paths`)
      and `posix_spawn` `uri interface -c <that file> -n <name>`, using the same
      `uri` executable as the manager (`/proc/self/exe`), or `uri` on `PATH` as a
      fallback. The exact command is printed, so it can be rerun by hand with

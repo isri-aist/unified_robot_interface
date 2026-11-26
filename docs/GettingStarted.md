@@ -85,9 +85,10 @@ want to control (e.g. `mc_ur5e`), and a driver plugin for it (see
 [Supported robots](docSupportedRobots.html)).
 
 The install prefix matters. `uri interface` looks for driver plugins
-in `<CMAKE_INSTALL_PREFIX>/lib/robot_interface` (compiled in), unless the
-`URI_DRIVER_PATH` environment variable lists other directories.
-Otherwise install drivers with the same prefix. See
+in `<CMAKE_INSTALL_PREFIX>/lib/robot_interface` (compiled in), after any
+directories listed in its config file's `driver_paths` or in the
+`URI_DRIVER_PATH` environment variable. Either list the driver's directory
+there, or install drivers with the same prefix. See
 [Robot interface](docRobotInterface.html#plugin-lookup).
 
 The build and the install both run `setcap cap_sys_nice+eip` on `uri` through

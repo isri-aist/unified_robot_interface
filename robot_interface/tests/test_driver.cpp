@@ -1,11 +1,17 @@
 // Minimal driver plugin used by test_driver_search_paths to prove that a
 // driver living outside the install prefix can be found and loaded.
+// Built twice with the same class name: TEST_DRIVER_Q0 tells the copies apart
+// in the precedence test.
 #include <robot_interface/RobotDriverTemplate.h>
 #include <robot_interface/driver/GripperInfo.h>
 #include <robot_interface/driver/api.h>
 
 #include <string>
 #include <vector>
+
+#ifndef TEST_DRIVER_Q0
+#  define TEST_DRIVER_Q0 1.0
+#endif
 
 namespace
 {
@@ -14,7 +20,7 @@ struct TestDriver : robot_interface::RobotDriver
   void sync() override {}
   std::vector<double> getActualQ() override
   {
-    return {1.0, 2.0, 3.0};
+    return {TEST_DRIVER_Q0, 2.0, 3.0};
   }
   std::vector<double> getJointTorques() override
   {

@@ -29,7 +29,9 @@ add_library(robot_manager SHARED ${ROBOT_MANAGER_SRC})
 add_library(${PROJECT_NAME}::robot_manager ALIAS robot_manager)
 
 target_link_libraries(
-  robot_manager PUBLIC robot_controller::core robot_comm mc_rtc::mc_control
+  robot_manager
+  PUBLIC robot_controller::core robot_comm mc_rtc::mc_control
+  PRIVATE robot_interface_lib
 )
 
 target_include_directories(

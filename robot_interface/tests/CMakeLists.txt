@@ -20,8 +20,24 @@ add_ri_test(test_init_handshake test_init_handshake.cpp)
 add_ri_test(test_pubsub_loop test_pubsub_loop.cpp)
 
 # Tiny driver plugin living in the build tree, outside any install prefix.
+# A second copy with the same class name, in another directory, checks that
+# the first directory in the search order wins. Each gets its own directory so
+# the loader does not scan the whole lib/ dir.
 add_library(search_path_test_driver MODULE test_driver.cpp)
 target_link_libraries(search_path_test_driver PRIVATE robot_driver_api)
+jrl_target_set_output_directory(
+  search_path_test_driver OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/driver_a
+)
+
+add_library(search_path_test_driver_b MODULE test_driver.cpp)
+target_link_libraries(search_path_test_driver_b PRIVATE robot_driver_api)
+target_compile_definitions(
+  search_path_test_driver_b PRIVATE TEST_DRIVER_Q0=10.0
+)
+jrl_target_set_output_directory(
+  search_path_test_driver_b OUTPUT_DIRECTORY
+  ${CMAKE_CURRENT_BINARY_DIR}/driver_b
+)
 
 add_ri_test(test_driver_search_paths test_driver_search_paths.cpp)
 target_link_libraries(
@@ -30,5 +46,8 @@ target_link_libraries(
 target_compile_definitions(
   test_driver_search_paths
   PRIVATE TEST_DRIVER_DIR="$<TARGET_FILE_DIR:search_path_test_driver>"
+          TEST_DRIVER_B_DIR="$<TARGET_FILE_DIR:search_path_test_driver_b>"
 )
-add_dependencies(test_driver_search_paths search_path_test_driver)
+add_dependencies(
+  test_driver_search_paths search_path_test_driver search_path_test_driver_b
+)

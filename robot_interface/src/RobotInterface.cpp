@@ -6,6 +6,7 @@
 #include <mc_rtc/logging.h>
 #include <cstdlib>
 #include <fmt/ranges.h>
+#include <robot_interface/DriverPathsConfig.h>
 #include <robot_interface/config.h>
 #include <robot_interface/driver/DriverSearchPaths.h>
 #include <robot_interface/driver/GripperInfo.h>
@@ -16,11 +17,15 @@
 namespace robot_interface
 {
 
-RobotInterface::RobotInterface(const std::string & name, const mc_rtc::Configuration & comm_config)
-: name_(name), comm_config_(comm_config), driver_loader_("ROBOT_DRIVER_PLUGIN",
-                                                         driverSearchPaths(),
-                                                         true,
-                                                         PluginAbi{ROBOT_DRIVER_ABI_SYMBOL, ROBOT_DRIVER_ABI_VERSION})
+RobotInterface::RobotInterface(const std::string & name,
+                               const mc_rtc::Configuration & comm_config,
+                               const std::vector<std::string> & driver_paths)
+: name_(name), comm_config_(comm_config), has_extra_driver_paths_(!driver_paths.empty()),
+  driver_search_paths_(driverSearchPaths(driver_paths)),
+  driver_loader_("ROBOT_DRIVER_PLUGIN",
+                 driver_search_paths_,
+                 true,
+                 PluginAbi{ROBOT_DRIVER_ABI_SYMBOL, ROBOT_DRIVER_ABI_VERSION})
 {
   comm_ = robot_comm::CommunicationFactory::makeCommunication(name_, comm_config_);
   comm_->setupClient();
@@ -181,10 +186,9 @@ void RobotInterface::loadDriver(const std::string & driver_name,
   mc_rtc::log::info("[RobotInterface] '{}' loading driver '{}' ({}:{}), config_path: '{}', {} gripper(s)", name_,
                     driver_name, ip, port, config_path, grippers.size());
 
-  if(std::getenv(DRIVER_PATH_ENV))
+  if(has_extra_driver_paths_ || std::getenv(DRIVER_PATH_ENV))
   {
-    mc_rtc::log::info("[RobotInterface] '{}' {} is set, driver search paths: {}", name_, DRIVER_PATH_ENV,
-                      fmt::join(driverSearchPaths(), ":"));
+    mc_rtc::log::info("[RobotInterface] '{}' driver search paths: {}", name_, fmt::join(driver_search_paths_, ":"));
   }
 
   driver_ = driver_loader_.load(driver_name, ip, port, config_path, grippers);
@@ -359,7 +363,7 @@ int runRobotInterface(const std::string & config_path, std::string name, const s
 
   mc_rtc::log::info("[robot_interface] Starting '{}' from config '{}'", name, config_path);
 
-  RobotInterface iface(name, comm_config);
+  RobotInterface iface(name, comm_config, driverPathsFromConfig(config, "driver_paths", config_path));
   iface.run(interrupt);
 
   mc_rtc::log::info("[robot_interface] '{}' exited cleanly", name);
