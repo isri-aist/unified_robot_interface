@@ -168,6 +168,7 @@ public:
   // it (as below) if this driver only needs ip/port.
   __CLASS__(const std::string & ip, uint16_t port = 0, const std::string & config_path = "");
 
+  // Must not throw. Leave the robot safe here, or override stop() below.
   ~__CLASS__() override;
 
   // Called once per control cycle, before any of the getters below.
@@ -195,6 +196,11 @@ public:
 
   // TODO: send a joint torque command [Nm].
   void tauJ(const std::vector<double> & tau) override;
+
+  // Optional: called in torque mode when the control loop ends (e.g. manager
+  // lost), just before the destructor. Override it if the destructor does not
+  // already leave the robot safe.
+  // void stop() override;
 
 private:
   std::string ip_;
@@ -379,6 +385,9 @@ Fill in the `TODO`s in `src/RobotDriver__NAME__.cpp` (and `CMakeLists.txt` /
 - `sync()`: block/poll for a new state update -- this paces the control loop.
 - `getActualQ()` / `getActualQd()` / `getJointTorques()`: report the latest state.
 - `servoJ()` / `speedJ()` / `tauJ()`: send position/velocity/torque commands.
+- `stop()` (optional): stop the robot when the control loop ends in torque mode,
+  for example because the manager was lost. Override it if the destructor does
+  not already leave the robot safe.
 
 Test it without the manager using `uri viewer -c etc/robot_interface.yaml`
 (installed with `unified_robot_interface`), which loads the plugin and prints

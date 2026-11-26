@@ -51,3 +51,10 @@ target_compile_definitions(
 add_dependencies(
   test_driver_search_paths search_path_test_driver search_path_test_driver_b
 )
+
+add_ri_test(test_link_loss test_link_loss.cpp)
+# RobotInterface.h instantiates mc_rtc's loader, which robot_interface_lib does not
+# propagate.
+target_link_libraries(
+  test_link_loss PRIVATE robot_interface_lib mc_rtc::mc_rtc_loader
+)

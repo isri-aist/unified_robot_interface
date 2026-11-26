@@ -63,8 +63,11 @@ network_interface:
    robot receives a valid command from the very first cycle, even before
    mc_rtc has produced one:
    - `position`: the current `getActualQ()`, so the robot holds its pose
-   - `velocity` / `torque`: zeros
-5. **Control loop**, until `SIGINT`/`SIGTERM`:
+   - `velocity`: zeros
+   - `torque`: none, since zero torque does not hold a robot. Nothing is sent
+     until the manager's first command.
+5. **Control loop**, until `SIGINT`/`SIGTERM` or, in `torque` mode, until the
+   manager is lost (see [Connection loss](docRobotManager.html)):
 
    ```cpp
    while(!interrupt)
@@ -82,6 +85,9 @@ network_interface:
 
    A `Command` carries one of `position`, `velocity` or `torque`. The first
    non-empty one is applied, in that order.
+6. **Shutdown**: however the loop ended, exceptions included, the driver's
+   `stop()` is called in `torque` mode, then the driver is destroyed. The
+   process exits with code 2 if it stopped a robot because the manager was lost.
 
 ## The `RobotDriver` interface
 
@@ -100,6 +106,7 @@ contract between URI and a robot:
 | `servoJ(q)` | yes | in `position` mode | Send joint positions [rad] |
 | `speedJ(qd)` | yes | in `velocity` mode | Send joint velocities [rad/s] |
 | `tauJ(tau)` | yes | in `torque` mode | Send joint torques [Nm] |
+| `stop()` | no | in `torque` mode, when the loop ends | Bring the robot to a safe state. No command follows, and the driver is destroyed right after. Default: nothing, for drivers whose destructor leaves the robot safe. |
 | `setDataRead()` | no | not called by `RobotInterface` | Optional hook |
 
 The data types (`IMUData`, `WrenchData`, `GripperInfo`) are plain structs.
@@ -151,7 +158,7 @@ scans the plugin directory, it reads that value from every library.
 `load()` refuses a driver whose version differs, or that has none:
 
 ```text
-[PluginLoader] Plugin 'RobotDriverRTDE' (/opt/uri/lib/robot_interface/libRobotDriverRTDE.so) was built against an incompatible interface: ABI version 2 (expected ABI version 3). Rebuild and reinstall it against the current headers.
+[PluginLoader] Plugin 'RobotDriverRTDE' (/opt/uri/lib/robot_interface/libRobotDriverRTDE.so) was built against an incompatible interface: ABI version 3 (expected ABI version 4). Rebuild and reinstall it against the current headers.
 ```
 
 With autostart, the manager receives that message as the init reply and drops

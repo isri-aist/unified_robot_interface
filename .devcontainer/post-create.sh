@@ -27,13 +27,6 @@ cmake --build "${PROJECT_DIR}/build" --parallel "${BUILD_JOBS}"
 
 cmake --install "${PROJECT_DIR}/build"
 
-echo "==> Removing uri file capability"
-
-URI_BIN="${PROJECT_DIR}/build/bin/uri"
-if [ -f "${URI_BIN}" ]; then
-  sudo setcap -r "${URI_BIN}" 2>/dev/null || true
-fi
-
 echo "==> Setting up environment"
 ENV_FILE="${HOME}/.unified_robot_interface_env"
 cat > "${ENV_FILE}" <<EOF

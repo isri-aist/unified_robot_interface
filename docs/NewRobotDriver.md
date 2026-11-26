@@ -114,6 +114,10 @@ Rules to keep in mind:
   cycle, and mc_rtc waits before initializing the robot.
 - **Command modes**: implement at least the method for the `controller.mode`
   you will use. The others can throw or be no-ops.
+- **Stopping**: in `torque` mode, `stop()` is called when the control loop ends
+  (manager lost, `Ctrl+C` or an exception), and the driver is always destroyed
+  right after. Override `stop()` unless the destructor already leaves the robot
+  safe. Destructors must not throw.
 - **Sensors**: override `getIMUs()` / `getForceSensors()` when the robot has
   them. The keys must match the RobotModule's body sensor and force sensor
   names, e.g. `"EEForceSensor"`.
@@ -269,6 +273,7 @@ and start `uri interface` there instead. See
   units, verified with `uri viewer`
 - `sync()` blocks at the robot's native rate
 - The command method for the chosen `controller.mode` is implemented
+- In `torque` mode, killing `uri manager` leaves the robot in a safe state
 - `controller.time_step` matches the robot's rate, and mc_rtc's
   `Timestep` is a multiple of it
 - The driver is installed in URI's `<prefix>/lib/robot_interface`

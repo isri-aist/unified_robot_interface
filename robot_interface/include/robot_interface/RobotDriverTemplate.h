@@ -12,7 +12,7 @@
 /// a virtual function changes the vtable layout, so a driver built against an
 /// older header would otherwise crash (calling through a missing vtable slot)
 /// instead of failing to load.
-#define ROBOT_DRIVER_ABI_VERSION 3
+#define ROBOT_DRIVER_ABI_VERSION 4
 
 /// Symbol exported by ROBOT_DRIVER_EXPORT_ABI_VERSION(), checked by
 /// PluginLoader before a driver is created.
@@ -79,6 +79,13 @@ struct ROBOT_DRIVER_DLLAPI RobotDriver
   {
     return {};
   }
+
+  /// Bring the robot to a safe state. Called at most once, in torque mode, when
+  /// the control loop ends: manager lost, Ctrl+C or an exception. No command
+  /// follows, and the driver is destroyed right after. Must return promptly;
+  /// may throw if the robot could not be stopped. Override it unless the
+  /// destructor already leaves the robot safe. Does nothing by default.
+  virtual void stop() {}
 };
 
 typedef std::shared_ptr<RobotDriver> RobotDriverPtr;

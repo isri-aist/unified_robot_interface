@@ -160,7 +160,7 @@ What each side does:
 | Side | Lost when | Reaction |
 |---|---|---|
 | `uri manager` | the interface's token is lost, or no new `State` for the timeout once the robot is initialized, or no first `State` within 10 s | Logs `Lost connection to robot '<name>': <reason>` and stops the controller; `uri manager` then shuts down as on `Ctrl+C` |
-| `uri interface` | the manager's token is lost, or no new `Command` for the timeout once commands started | Logs `lost the manager (<reason>), holding the robot` and sends a hold command: the current position in `position` mode, zeros in `velocity` and `torque` modes. It resumes when commands arrive again, for example from a restarted manager. |
+| `uri interface` | the manager's token is lost, or no new `Command` for the timeout once commands started | Logs `lost the manager (<reason>), holding the robot` and sends a hold command: the current position in `position` mode, zeros in `velocity` mode. It resumes when commands arrive again, for example from a restarted manager. In `torque` mode, it instead logs `lost the manager (<reason>), stopping the robot`, stops the robot through its driver and exits with code 2: restart it along with the manager. |
 
 A custom proxy reports a lost connection by overriding
 `RobotInterfaceBase::connectionError()`.
