@@ -28,7 +28,10 @@ target_include_directories(
 # mc_rtc is a PRIVATE dep — it is an implementation detail of the loader
 # and must not be propagated to driver plugins.
 # -----------------------------------------------------------------------
-add_library(robot_driver_loader SHARED driver/RobotDriverLoader.cpp)
+add_library(
+  robot_driver_loader SHARED driver/DriverSearchPaths.cpp
+                             driver/RobotDriverLoader.cpp
+)
 target_link_libraries(robot_driver_loader PRIVATE mc_rtc::mc_rtc_loader)
 target_link_libraries(robot_driver_loader PUBLIC robot_driver_api)
 target_include_directories(
@@ -43,7 +46,10 @@ target_include_directories(
 # -----------------------------------------------------------------------
 find_package(robot_comm QUIET)
 
-add_library(robot_interface_lib SHARED RobotInterface.cpp RobotStateViewer.cpp)
+add_library(
+  robot_interface_lib SHARED DriverPathsConfig.cpp RobotInterface.cpp
+                             RobotStateViewer.cpp
+)
 target_link_libraries(
   robot_interface_lib PUBLIC robot_driver_loader mc_rtc::mc_rtc_utils
 )

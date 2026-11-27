@@ -1,8 +1,12 @@
 #include <robot_interface/RobotStateViewer.h>
 
+#include <cstdlib>
+#include <fmt/ranges.h>
+#include <robot_interface/DriverPathsConfig.h>
 #include <robot_interface/PluginLoader.h>
 #include <robot_interface/RobotDriverTemplate.h>
 #include <robot_interface/config.h>
+#include <robot_interface/driver/DriverSearchPaths.h>
 #include <robot_interface/driver/GripperInfo.h>
 
 #include <mc_rtc/Configuration.h>
@@ -114,8 +118,11 @@ int runRobotStateViewer(const std::string & config_path,
 
   mc_rtc::Configuration config(config_path);
 
+  std::vector<std::string> extra_paths;
+
   if(!config.has("robot_interface") && config.has("Robots"))
   {
+    extra_paths = robot_interface::driverPathsFromConfig(config, "DriverPaths", config_path);
     auto robots = config("Robots");
     const auto robot_names = robots.keys();
     std::string robot_name = name;
@@ -134,6 +141,10 @@ int runRobotStateViewer(const std::string & config_path,
     }
     config = robots(robot_name);
   }
+  else
+  {
+    extra_paths = robot_interface::driverPathsFromConfig(config, "driver_paths", config_path);
+  }
   if(!config.has("robot_interface"))
   {
     mc_rtc::log::error_and_throw("No 'robot_interface' section in '{}' (expected at top level or under 'Robots')",
@@ -151,8 +162,14 @@ int runRobotStateViewer(const std::string & config_path,
 
   mc_rtc::log::info("[robot_state_viewer] Loading driver '{}' ({}:{})", driver_name, ip, port);
 
+  const auto search_paths = robot_interface::driverSearchPaths(extra_paths);
+  if(!extra_paths.empty() || std::getenv(robot_interface::DRIVER_PATH_ENV))
+  {
+    mc_rtc::log::info("[robot_state_viewer] Driver search paths: {}", fmt::join(search_paths, ":"));
+  }
+
   robot_interface::PluginLoader<robot_interface::RobotDriver> loader(
-      "ROBOT_DRIVER_PLUGIN", {robot_interface::ROBOT_INTERFACE_INSTALL_PREFIX}, false,
+      "ROBOT_DRIVER_PLUGIN", search_paths, false,
       robot_interface::PluginAbi{ROBOT_DRIVER_ABI_SYMBOL, ROBOT_DRIVER_ABI_VERSION});
   std::shared_ptr<robot_interface::RobotDriver> driver;
 

@@ -37,6 +37,9 @@ name: ur5e
 network_interface:
   protocol: zenoh
   # configuration: /path/to/zenoh.json5   # if multicast discovery is unavailable
+# Optional, only for drivers outside URI's install prefix; setting URI_DRIVER_PATH
+# also works. See "Plugin lookup".
+# driver_paths: [/opt/drivers, /home/me/franka_driver/build]
 ```
 
 ## Lifecycle
@@ -167,15 +170,55 @@ the robot. The fix is always to rebuild and reinstall the driver.
 
 ### Plugin lookup
 
-Drivers are searched **only** in `<CMAKE_INSTALL_PREFIX>/lib/robot_interface`,
-using the prefix `robot_interface` was built with (`ROBOT_INTERFACE_INSTALL_PREFIX`
-in the generated `robot_interface/config.h`). No environment variable adds
-extra paths. A driver installed elsewhere is not found. When a driver is
-missing, the loader logs the searched path and the drivers it did find:
+`uri interface` and `uri viewer` search these directories, in this order:
+
+1. The `driver_paths` list of the `-c` config file. For `uri viewer -c
+   mc_rtc.yaml`, the top-level `DriverPaths` list of that file instead (see
+   [Robot manager](docRobotManager.html)).
+2. The directories listed in the `URI_DRIVER_PATH` environment variable
+   (colon-separated, like `PATH`; empty entries are ignored).
+3. `<CMAKE_INSTALL_PREFIX>/lib/robot_interface`, using the prefix
+   `robot_interface` was built with (`ROBOT_INTERFACE_INSTALL_PREFIX` in the
+   generated `robot_interface/config.h`).
+
+Duplicate directories are dropped. If more than one directory contains a driver with the
+same class name, the first one will be selected. Paths are used as given (no `~` expansion),
+and missing directories are skipped. `driver_paths` and `DriverPaths` must be lists of
+strings; an empty key (all entries commented out) counts as an empty list.
+
+This lets you run a driver that is not installed in URI's prefix, for example
+one built in its own build tree, under Nix, or mounted into a container:
+
+```yaml
+# etc/robot_interface.yaml
+driver_paths: [/home/me/franka_driver/build, /opt/drivers]
+```
+
+```bash
+# or
+URI_DRIVER_PATH=/home/me/franka_driver/build:/opt/drivers uri interface -c etc/robot_interface.yaml
+```
+
+When any of these is set, `uri interface` and `uri viewer` log the search
+paths at info level. An interface started by the manager (`autostart: true`)
+inherits the manager's environment, so set the variable before `uri manager`,
+and gets the manager's top-level `DriverPaths` as its `driver_paths`.
+Driver paths are local to the machine that loads the driver: they are never
+sent from the manager to a remote interface in the init query. A remote
+interface uses its own config file and environment.
+
+`uri` carries the `cap_sys_nice` capability, and user-supplied driver paths
+(config files, `URI_DRIVER_PATH`) are honoured regardless. **Whoever
+controls these paths or the listed directories controls the code that runs with
+that capability.** Only list directories that unprivileged users cannot write to.
+
+When a driver is missing, the loader logs the searched paths and the drivers it
+did find:
 
 ```text
 [PluginLoader] Plugin 'RobotDriverFoo' not found
 [PluginLoader] Searched paths:
+  - /home/me/franka_driver/build
   - /opt/uri/lib/robot_interface
 [PluginLoader] Available plugins:
   - RobotDriverRTDE

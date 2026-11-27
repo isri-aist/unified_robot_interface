@@ -17,6 +17,7 @@
 #include <string>
 #include <thread>
 #include <unordered_map>
+#include <vector>
 
 namespace robot_manager
 {
@@ -85,6 +86,8 @@ private:
   pid_t spawnRobotInterface(const std::string & robot_name, const mc_rtc::Configuration & robot_config);
   void stopSpawnedInterfaces();
   std::unordered_map<std::string, pid_t> spawned_interfaces_{};
+  // Top-level DriverPaths, written into each autostarted interface's config.
+  std::vector<std::string> driver_paths_{};
 
   /* Process configuration */
   void processGConfig(mc_control::MCGlobalController::GlobalConfiguration & gconfig);

@@ -4,7 +4,11 @@
 #include <robot_comm/serialization/MessageTraits.h>
 
 #include <mc_rtc/logging.h>
+#include <cstdlib>
+#include <fmt/ranges.h>
+#include <robot_interface/DriverPathsConfig.h>
 #include <robot_interface/config.h>
+#include <robot_interface/driver/DriverSearchPaths.h>
 #include <robot_interface/driver/GripperInfo.h>
 
 #include <chrono>
@@ -22,11 +26,14 @@ constexpr int link_lost_exit_code = 2;
 
 RobotInterface::RobotInterface(const std::string & name,
                                const mc_rtc::Configuration & comm_config,
-                               DriverFactory driver_factory)
-: name_(name), comm_config_(comm_config), driver_loader_("ROBOT_DRIVER_PLUGIN",
-                                                         {robot_interface::ROBOT_INTERFACE_INSTALL_PREFIX},
-                                                         true,
-                                                         PluginAbi{ROBOT_DRIVER_ABI_SYMBOL, ROBOT_DRIVER_ABI_VERSION}),
+                               DriverFactory driver_factory,
+                               const std::vector<std::string> & driver_paths)
+: name_(name), comm_config_(comm_config), has_extra_driver_paths_(!driver_paths.empty()),
+  driver_search_paths_(driverSearchPaths(driver_paths)),
+  driver_loader_("ROBOT_DRIVER_PLUGIN",
+                 driver_search_paths_,
+                 true,
+                 PluginAbi{ROBOT_DRIVER_ABI_SYMBOL, ROBOT_DRIVER_ABI_VERSION}),
   driver_factory_(std::move(driver_factory))
 {
   if(!driver_factory_)
@@ -231,6 +238,11 @@ void RobotInterface::loadDriver(const std::string & driver_name,
   mc_rtc::log::info("[RobotInterface] '{}' loading driver '{}' ({}:{}), config_path: '{}', {} gripper(s)", name_,
                     driver_name, ip, port, config_path, grippers.size());
 
+  if(has_extra_driver_paths_ || std::getenv(DRIVER_PATH_ENV))
+  {
+    mc_rtc::log::info("[RobotInterface] '{}' driver search paths: {}", name_, fmt::join(driver_search_paths_, ":"));
+  }
+
   driver_ = driver_factory_(driver_name, ip, port, config_path, grippers);
 
   mc_rtc::log::success("[RobotInterface] '{}' driver '{}' loaded", name_, driver_name);
@@ -410,7 +422,7 @@ int runRobotInterface(const std::string & config_path, std::string name, const s
 
   mc_rtc::log::info("[robot_interface] Starting '{}' from config '{}'", name, config_path);
 
-  RobotInterface iface(name, comm_config);
+  RobotInterface iface(name, comm_config, {}, driverPathsFromConfig(config, "driver_paths", config_path));
   if(!iface.run(interrupt))
   {
     mc_rtc::log::error("[robot_interface] '{}' exited after losing the manager", name);

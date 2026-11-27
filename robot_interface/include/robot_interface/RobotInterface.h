@@ -45,9 +45,13 @@ public:
   /// \param name Robot name, used as the prefix of its topics.
   /// \param comm_config The `network_interface` configuration.
   /// \param driver_factory Creates the driver; defaults to loading its plugin.
+  /// \param driver_paths Extra directories searched for the driver plugin by
+  /// the default factory, before URI_DRIVER_PATH and the install prefix (see
+  /// driverSearchPaths).
   RobotInterface(const std::string & name,
                  const mc_rtc::Configuration & comm_config,
-                 DriverFactory driver_factory = {});
+                 DriverFactory driver_factory = {},
+                 const std::vector<std::string> & driver_paths = {});
 
   /// Handle the init handshake, then run the control loop until interrupt is set
   /// or, in torque mode, the manager is lost. Returns false in the latter case.
@@ -86,6 +90,9 @@ private:
   mc_rtc::Configuration comm_config_;
   std::unique_ptr<robot_comm::Communication> comm_;
 
+  // Local to this machine, never received from the manager (ADR 0002).
+  bool has_extra_driver_paths_;
+  std::vector<std::string> driver_search_paths_;
   PluginLoader<RobotDriver> driver_loader_;
   DriverFactory driver_factory_;
   std::shared_ptr<RobotDriver> driver_;
@@ -125,8 +132,9 @@ private:
 
 /// Entry point of `uri interface`: loads the config file at config_path, then
 /// runs a RobotInterface until interrupt is set. A non-empty name overrides the
-/// config's 'name'. Returns the process exit code: 0, or 2 if a torque-mode
-/// robot was stopped because the manager was lost.
+/// config's 'name'. The config's optional 'driver_paths' list is searched for
+/// the driver before URI_DRIVER_PATH. Returns the process exit code: 0, or 2
+/// if a torque-mode robot was stopped because the manager was lost.
 int runRobotInterface(const std::string & config_path, std::string name, const std::atomic<bool> & interrupt);
 
 } // namespace robot_interface
