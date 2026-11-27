@@ -162,6 +162,26 @@ What each side does:
 | `uri manager` | the interface's token is lost, or no new `State` for the timeout once the robot is initialized, or no first `State` within 10 s | Logs `Lost connection to robot '<name>': <reason>` and stops the controller; `uri manager` then shuts down as on `Ctrl+C` |
 | `uri interface` | the manager's token is lost, or no new `Command` for the timeout once commands started | Logs `lost the manager (<reason>), holding the robot` and sends a hold command: the current position in `position` mode, zeros in `velocity` mode. It resumes when commands arrive again, for example from a restarted manager. In `torque` mode, it instead logs `lost the manager (<reason>), stopping the robot`, stops the robot through its driver and exits with code 2: restart it along with the manager. |
 
+The `uri interface` row only applies to interfaces that `uri manager` did not
+spawn: robots on another PC, or local robots started manually. An interface
+started with `autostart: true` is a child of the manager and does not outlive
+it:
+
+- When `uri manager` shuts down, whether on `Ctrl+C` or after losing another
+  robot, it sends `SIGTERM` to every spawned interface. Each one ends its
+  control loop and destroys its driver (see
+  [Robot interface](docRobotInterface.html), step 6), so the robot is
+  stopped by the driver, not held. For example, the RTDE driver calls
+  `stopControl()`: the UR arm comes to rest and its program ends.
+- If `uri manager` crashes or is killed with `SIGKILL`, it sends nothing. The
+  spawned interfaces keep running, lose the manager's token and react as in
+  the table above.
+
+So when one robot is lost, the whole fleet goes down: the manager stops, its
+autostarted robots stop, and only the remote or hand-started interfaces hold.
+To make a local robot hold instead, set `autostart: false` and run its
+`uri interface` yourself.
+
 A custom proxy reports a lost connection by overriding
 `RobotInterfaceBase::connectionError()`.
 

@@ -89,6 +89,10 @@ network_interface:
 6. **Shutdown**: however the loop ended, exceptions included, the driver's
    `stop()` is called in `torque` mode, then the driver is destroyed. The
    process exits with code 2 if it stopped a robot because the manager was lost.
+   An interface spawned with `autostart: true` reaches this step whenever
+   `uri manager` shuts down, because the manager sends it `SIGTERM`. Its robot
+   is then stopped by the driver's destructor rather than held (see
+   [Connection loss](docRobotManager.html)).
 
 ## The `RobotDriver` interface
 
